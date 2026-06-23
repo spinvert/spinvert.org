@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
+    "strictNullChecks": true,
+    "allowJs": true,
     "paths": {
+      "~/*": ["./src/*"],
       "$lib": ["./src/lib"],
       "$lib/*": ["./src/lib/*"],
     },
