@@ -8,7 +8,10 @@ import tailwindcss from "@tailwindcss/vite";
 // https://astro.build/config
 export default defineConfig({
   integrations: [svelte()],
-
+  build: {
+    format: "directory",
+  },
+  trailingSlash: "always",
   vite: {
     plugins: [tailwindcss()],
   },

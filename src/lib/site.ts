@@ -6,12 +6,12 @@ export const site = {
 };
 
 export const navLinks = [
-  { label: "Overview", href: "#top" },
-  { label: "Contact", href: "/contact" },
+  { label: "Overview", href: "/#top" },
+  { label: "Contact", href: "/contact/" },
 ];
 
 export const legalLinks = [
-  { label: "Imprint", href: "/imprint" },
-  { label: "Privacy", href: "/privacy" },
-  { label: "Contact", href: "/contact" },
+  { label: "Imprint", href: "/imprint/" },
+  { label: "Privacy", href: "/privacy/" },
+  { label: "Contact", href: "/contact/" },
 ];
