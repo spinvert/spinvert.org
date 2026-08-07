@@ -7,7 +7,7 @@ export const site = {
 
 export const navLinks = [
   { label: "Overview", href: "/#top" },
-  { label: "Contact", href: "/contact/" },
+  { label: "Docs", href: "/docs/" },
 ];
 
 export const legalLinks = [
