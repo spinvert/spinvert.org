@@ -1,0 +1,42 @@
+---
+import { Bike, Droplets, Wind } from "@lucide/svelte";
+import { Button } from "$lib/components/ui/button";
+import { site } from "$lib/site";
+
+const sources = [
+  { label: "Wind", icon: Wind },
+  { label: "Hydro", icon: Droplets },
+  { label: "Pedal", icon: Bike },
+];
+---
+
+<section class="bg-[radial-gradient(ellipse_at_top,--theme(--color-primary/15%),transparent_70%)]">
+  <div class="mx-auto flex max-w-3xl flex-col items-center px-4 py-24 text-center sm:px-6 sm:py-32">
+    <p class="mb-6 rounded-full border border-primary/20 bg-accent px-3 py-1 text-xs font-medium text-accent-foreground">
+      Open Source Hardware
+    </p>
+    <h1 class="text-4xl font-semibold tracking-tight text-balance sm:text-6xl">
+      Turn rotation into <span class="text-primary">electricity</span>
+    </h1>
+    <p class="mt-6 max-w-2xl text-lg text-pretty text-muted-foreground">
+      Spinvert is a boost converter with active rectification for small wind turbines, micro-hydro
+      and pedal generators — efficiently harvesting energy even at low speeds.
+    </p>
+    <ul class="mt-8 flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
+      {sources.map(({ label, icon: Icon }) => (
+        <li class="flex items-center gap-2">
+          <Icon class="size-4 text-primary" aria-hidden="true" />
+          {label}
+        </li>
+      ))}
+    </ul>
+    <div class="mt-10 flex flex-wrap justify-center gap-3">
+      <Button href={site.repoUrl} size="lg" class="px-4">
+        Explore on GitHub
+      </Button>
+      <Button href="/contact" variant="outline" size="lg" class="px-4">
+        Get in touch
+      </Button>
+    </div>
+  </div>
+</section>

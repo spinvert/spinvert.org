@@ -1,0 +1,22 @@
+---
+import { legalLinks, site } from "$lib/site";
+
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t">
+  <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:px-6">
+    <p>
+      © {year} {site.name} · Open Source Hardware
+    </p>
+    <ul class="flex gap-6">
+      {legalLinks.map((link) => (
+        <li>
+          <a href={link.href} class="hover:text-foreground">
+            {link.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</footer>
