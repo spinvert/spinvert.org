@@ -1,0 +1,4 @@
+[run]
+# Run package.json scripts and bin executables with Bun instead of the
+# runtime in their shebang (e.g. `#!/usr/bin/env node`).
+bun = true
