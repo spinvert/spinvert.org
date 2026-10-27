@@ -1,0 +1,112 @@
+---
+title: Design decisions
+description: Why the Spinvert Boost uses active rectification, a boost converter with bypass, a dump load and a lookup curve for control.
+order: 1
+---
+
+This page explains the main design decisions behind the Spinvert Boost and the trade-offs that
+were made.
+
+## Boost converter instead of buck converter
+
+A permanent magnet generator produces a voltage proportional to its speed. Without a converter,
+a battery can only be charged when the rectified generator voltage exceeds the battery voltage.
+At low wind speeds, the turbine spins too slowly to reach this voltage. It produces nothing, even
+though power is available in the wind.
+
+A DC/DC converter decouples the generator voltage from the battery voltage. There are two
+options:
+
+- A **buck converter** (step-down) requires a generator voltage _above_ the battery voltage at
+  all relevant speeds. The generator has to be designed for low speeds, so its voltage becomes
+  very high at high speeds. Without load (e.g. if the battery is disconnected), the open-circuit
+  voltage can reach several hundred volts.
+- A **boost converter** (step-up) works with a generator voltage _below_ the battery voltage.
+  The generator is designed so that it reaches the battery voltage only at high wind speeds.
+
+The Spinvert Boost uses the boost approach. All voltages stay in the extra-low voltage range
+below 60 V DC, which makes the system safer to install and allows cheaper semiconductors with low
+on-resistance.
+
+A 48 V battery or DC bus keeps the currents lower than with 12 V or 24 V systems and is the
+standard for off-grid inverters in the power range of small wind turbines.
+
+## Boost stage with bypass
+
+The boost converter is rated for 10 A at 48 V (about 480 W). Above that, a bypass connects the
+rectifier directly to the output and allows up to 20 A (about 960 W). This hybrid approach was
+chosen for several reasons:
+
+- **Cost and availability:** A DC/DC converter for 20 A would be considerably more expensive.
+  Inductors for this current are not available as off-the-shelf components anymore. A 10 A stage
+  including its EMC filtering can be built at low cost, while the bypass still allows higher
+  currents when there is lots of wind.
+- **Physics:** A boost converter can only increase the voltage. As soon as the rectified voltage
+  reaches the battery voltage, the converter can't operate anymore, and a direct connection is the
+  only option anyway.
+- **Efficiency:** In bypass mode, only the conduction losses of the bypass switch occur. There are
+  no switching losses and no inductor losses.
+- **Wind statistics:** The power in the wind grows with the cube of the wind speed. At typical
+  sites, most of the operating hours are at low wind speeds where the boost converter matters
+  most, while full power is reached only rarely. It makes sense to size the converter for the
+  frequent conditions.
+
+The trade-off: in bypass mode, the battery voltage determines the operating point of the
+turbine, and the board cannot control the speed anymore. The generator should be selected such
+that the operating point in bypass mode stays close to the optimum. The
+[calculator](/docs/optimal-operation/#calculator) shows how well a given generator matches.
+
+## Active rectification
+
+In a diode bridge, two diodes are always in the current path. Each causes a voltage drop of
+about 0.5 to 1 V, so 1 to 2 V of the generator voltage are lost. At 48 V this is a loss of 2 to
+4 %. However, the boost converter allows harvesting power at much lower voltages, e.g. 12 V,
+where the same diode drop causes a loss of 10 % or more.
+
+An active rectifier replaces the diodes by MOSFETs. Their losses depend on the on-resistance and
+are much lower at low and medium currents. They also produce less heat: at 20 A, a diode bridge
+dissipates around 30 W, while MOSFETs with 5 mΩ on-resistance dissipate only a few watts. See
+[Hardware: Active rectifier](/docs/hardware/#active-rectifier) for an interactive comparison.
+
+## Dump load behind the rectifier
+
+A wind turbine must never be left without load. Without load, the rotor accelerates to its
+runaway speed, which is typically 1.5 to 2 times the speed at optimal operation. The mechanical
+stress increases, and the generator voltage rises proportionally to the speed and can exceed the
+input voltage rating of the board.
+
+The dump load is connected directly behind the rectifier, in parallel to the boost converter
+and the bypass. This way, it can load the generator independent of the converter stage and of
+the battery: if the battery is full or disconnected, the dump load takes over. As it is connected
+to the rectified DC voltage, a simple resistive load such as a water or air heater can be used.
+
+## Lookup curve instead of perturb and observe
+
+Solar charge controllers usually find the maximum power point by _perturb and observe_: they
+change the operating point a little and check whether the power increased. This doesn't work well
+for wind turbines:
+
+- The rotor has a large inertia. After a change of the generator current, the measured power is
+  dominated by the rotor accelerating or slowing down, not by the aerodynamic power.
+- The wind speed changes continuously, so the controller can't tell whether a power change was
+  caused by its own action or by a gust.
+
+Instead, the Spinvert Boost uses the known characteristics of the turbine. At the optimum, the
+power of a wind rotor is proportional to the cube of its speed. The board measures the speed and
+sets the generator current according to a lookup curve. This is fast, robust and doesn't need a
+wind speed sensor. The derivation and a calculator for the curve can be found in
+[Optimal operation](/docs/optimal-operation/).
+
+The speed is derived from the frequency of the generator voltage, which requires knowing the
+number of poles of the generator. In contrast to the voltage, the frequency is not affected by
+voltage drops in the generator windings and is therefore an exact measure of the speed.
+
+## Based on Libre Solar
+
+The hardware is based on the Libre Solar MPPT charge controllers, and the firmware will be the
+generic Libre Solar charge controller firmware. This way, proven circuit blocks and features such
+as battery charging algorithms, data logging and the ThingSet communication protocol can be
+reused.
+
+The CAN-FD interface allows integration into larger systems, e.g. with battery management systems
+or other Libre Solar devices. The USB interface is used for monitoring and debugging.
