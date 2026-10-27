@@ -1,6 +1,86 @@
 ---
-title: Documentation
+title: Overview
+description: Introduction to the Spinvert Boost 4820, an active rectifier and boost converter for small wind turbines, micro hydro and pedal generators.
 order: 0
 ---
 
-ToDo!
+import Callout from "~/components/Callout.astro";
+import PowerFlowDiagram from "~/lib/components/docs/PowerFlowDiagram.svelte";
+
+The **Spinvert Boost 4820** is an open-source active rectifier and DC/DC boost converter with
+48 V output for 3-phase permanent magnet generators. Its main purpose is to improve the
+performance of small wind turbines at low wind speeds, but it is suitable for any 3-phase
+permanent magnet generator, e.g. in micro hydro power plants or pedal power generators.
+
+The hardware is based on the [Libre Solar](https://libre.solar) MPPT charge controllers and will
+be supported by the Libre Solar charge controller firmware.
+
+<Callout type="caution" title="Early development stage">
+  The project is at a very early stage of development (alpha). Major issues are expected, and the
+  documentation describes the intended design, which may still change.
+</Callout>
+
+## How it works
+
+A small wind turbine produces a voltage roughly proportional to its speed. At low wind speeds,
+this voltage is too low to charge a 48 V battery, so a turbine connected directly to the battery
+via a diode rectifier produces nothing until it spins fast enough. The Spinvert Boost solves this
+in three stages:
+
+1. An **active rectifier** converts the 3-phase AC current from the generator to DC with much
+   lower losses than a diode bridge.
+2. A **DC/DC boost converter** steps the rectified voltage up to the battery voltage. It controls
+   the current drawn from the generator so that the turbine operates at its optimum speed for
+   the current wind conditions.
+3. At high wind speeds, the rectified voltage is high enough that boosting is not needed anymore.
+   A **bypass** then connects the rectifier directly to the output.
+
+A **dump load** behind the rectifier keeps the generator loaded if the battery is full or the
+turbine runs too fast.
+
+Select an operating mode to see how the power flows through the board:
+
+<PowerFlowDiagram client:visible />
+
+## Specifications
+
+| Parameter                  | Value                                     |
+| -------------------------- | ----------------------------------------- |
+| Generator type             | 3-phase permanent magnet generator        |
+| Input voltage (rectified)  | 0 to 60 V                                 |
+| Rectifier current          | max. 20 A                                 |
+| Output voltage             | 48 V nominal (battery or DC bus)          |
+| Boost converter            | max. 10 A output (approx. 480 W)          |
+| Bypass                     | max. 20 A output (approx. 960 W)          |
+| Dump load output           | max. 20 A                                 |
+| Boost inductor / frequency | 47 µH / 128 kHz                           |
+| Interfaces                 | USB (monitoring, debugging), CAN-FD       |
+| Firmware                   | Libre Solar charge controller firmware    |
+
+{/* TODO: Add dimensions, connectors, operating temperature and standby consumption. */}
+
+## Contents of this documentation
+
+- [Design decisions](/docs/design-decisions/) explains why the board is built the way it is.
+- [Generator basics](/docs/generator/) describes the generator model and how to measure the
+  parameters of your own generator.
+- [Optimal operation](/docs/optimal-operation/) derives the optimal operating curve of a wind
+  turbine and contains a calculator for the lookup curve used by the firmware.
+- [Hardware](/docs/hardware/) covers the active rectifier, the boost stage, bypass, dump load and
+  measurements.
+- [Firmware](/docs/firmware/) describes the control concept and operating modes.
+- [Installation and safety](/docs/installation/) gives guidance for setting up a system.
+
+## Source files and license
+
+The schematic and PCB are designed with KiCad. Hardware design files are available in the
+[GitHub repository](https://github.com/spinvert/) and are licensed under the
+[CERN Open Hardware Licence Version 2 - Weakly Reciprocal](https://cern-ohl.web.cern.ch/).
+
+The documentation is licensed under the
+[Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)](https://creativecommons.org/licenses/by-sa/4.0/)
+license.
+
+This project was kick-started by funding from
+[Prototype Fund Hardware](https://hardware.prototypefund.de/), which covered parts of the
+development and documentation.
