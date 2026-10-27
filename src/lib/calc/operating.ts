@@ -121,21 +121,25 @@ export function controlPoint(sys: WindSystem, rpm: number): ControlPoint {
   };
 }
 
-/** Behavior with a passive diode rectifier connected directly to the battery */
+/**
+ * Behavior with a passive diode rectifier connected directly to the battery, assuming the same
+ * current rating as the bypass of the board for comparison
+ */
 export function directControlPoint(sys: WindSystem, rpm: number): ControlPoint {
   const { generator, rectifier, batteryVoltage } = sys;
   const current = currentAtClampedVoltage(generator, rectifier, false, rpm, batteryVoltage);
   const point = dcOperatingPoint(generator, rectifier, false, rpm, current);
+  const outputPower = Math.min(point.power, batteryVoltage * board.bypassMaxCurrent);
   return {
     rpm,
     frequency: electricalFrequency(generator.poles, rpm),
-    mode: "bypass",
+    mode: current > board.bypassMaxCurrent ? "overload" : "bypass",
     current,
     voltage: current > 0 ? batteryVoltage : point.voltage,
     shaftPower: point.shaftPower,
     dcPower: point.power,
-    outputPower: point.power,
-    excessPower: 0,
+    outputPower,
+    excessPower: point.power - outputPower,
   };
 }
 
