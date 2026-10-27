@@ -1,0 +1,123 @@
+---
+title: Generator basics
+description: Model of a 3-phase permanent magnet generator with rectifier, and how to measure the parameters of your own generator.
+order: 2
+---
+
+import Callout from "~/components/Callout.astro";
+import GeneratorCharacterization from "~/lib/components/docs/GeneratorCharacterization.svelte";
+
+Small wind turbines, micro hydro turbines and pedal generators usually use 3-phase permanent
+magnet synchronous generators (PMSG). The rotor carries permanent magnets, and the stator has
+three windings, typically connected in star (Y). This page describes a simple model of such a
+generator in combination with a rectifier. The same model is used in the calculators of this
+documentation.
+
+## Poles and frequency
+
+The magnets on the rotor alternate between north and south poles. The number of poles $p$ is
+always even, and $p/2$ is the number of pole pairs. With every revolution, each winding sees
+$p/2$ full periods of the magnetic field. The electrical frequency of the generator voltage is
+therefore
+
+$$
+f_e = \frac{p}{2} \cdot \frac{n}{60} = \frac{p \cdot n}{120}
+$$
+
+with the speed $n$ in rpm. A generator with 16 poles running at 600 rpm produces a voltage with
+80 Hz.
+
+The board measures the frequency of the generator voltage to determine the speed. This is why
+the pole count is an important parameter: with a wrong value, all calculated speeds are off by
+the same factor.
+
+## Voltage
+
+The voltage induced in the windings (back-EMF) is proportional to the speed. It is described by
+the voltage constant $k_e$. In this documentation, $k_e$ is defined as the open-circuit RMS
+voltage between two terminals (line-to-line) per 1000 rpm:
+
+$$
+V_{LL} = k_e \cdot \frac{n}{1000}
+$$
+
+This definition is used because it can be measured directly with a multimeter at the generator
+terminals, no matter whether the windings are connected in star or delta.
+
+The rectifier converts the three AC voltages to DC. Without load, the rectified voltage equals
+the average of the highest line-to-line voltage at any time:
+
+$$
+V_{dc,0} = \frac{3\sqrt{2}}{\pi} \, V_{LL} \approx 1.35 \, V_{LL}
+$$
+
+## Generator under load
+
+When current flows, the voltage at the rectifier output drops below the open-circuit value. For
+a 6-pulse rectifier, two phases conduct at any time. With the phase resistance $R$ and phase
+inductance $L$ (star equivalent), the rectified voltage at DC current $I$ is approximately
+
+$$
+V_{dc} = V_{dc,0} - 2 R \, I - \frac{3}{\pi} \, \omega_e L \, I - V_{rect}
+$$
+
+with the electrical angular frequency $\omega_e = 2\pi f_e$ and the voltage drop $V_{rect}$ of
+the rectifier.
+
+- The term $2 R I$ is caused by the resistance of the windings. It results in **copper losses**
+  of $P_{Cu} = 2 R I^2$, which heat the generator.
+- The term $\frac{3}{\pi} \omega_e L I$ is caused by the inductance of the windings, which delays
+  the transfer of the current from one phase to the next (commutation). This voltage drop is
+  **not a loss**: the power is simply not drawn from the generator. However, it limits the power
+  that can be extracted at a given speed.
+
+The inductive voltage drop grows with the electrical frequency. Generators with many poles run at
+high frequencies even at low speeds, so their inductance plays a larger role.
+
+The power drawn from the generator shaft (ignoring friction and iron losses) is
+
+$$
+P_{shaft} = \left(V_{dc,0} - \frac{3}{\pi} \, \omega_e L \, I\right) \cdot I
+$$
+
+and the electrical power at the rectifier output is $P_{dc} = V_{dc} \cdot I$.
+
+## Measuring your generator
+
+If the parameters of a generator are unknown, they can be determined with a few simple
+measurements. You need:
+
+- A way to drive the generator at a constant speed, e.g. a drill or lathe, or the turbine itself
+  in steady wind
+- A tachometer (an optical tachometer with a reflective tape works well) or a known speed
+- A multimeter that can measure AC voltage and frequency (true RMS)
+- Optional: a milliohm meter or a lab power supply for the resistance, and an LCR meter for the
+  inductance
+
+<Callout title="Safety">
+  Disconnect the generator from any load or electronics during the measurements. Never short the
+  terminals of a spinning generator. Be careful with rotating parts.
+</Callout>
+
+**Open-circuit test:** Drive the generator at a constant speed without load. Measure the speed,
+the AC voltage between two terminals and its frequency. Choose a speed in the normal operating
+range of the generator.
+
+**Resistance:** With the generator at rest, measure the resistance between two terminals. As the
+values are usually well below 1 Ω, the resistance of the test leads matters. Use a 4-wire
+measurement, or feed a known DC current (e.g. 1 A from a lab power supply) and measure the
+voltage directly at the terminals.
+
+**Inductance:** Measure the inductance between two terminals with an LCR meter. The value may
+change with the rotor position, so take the average of a few positions. If the inductance is
+unknown, the calculator can be used with a value of zero, but the results at high speeds will be
+too optimistic.
+
+Enter your measurements to calculate the generator parameters:
+
+<GeneratorCharacterization client:visible calculatorHref="/docs/optimal-operation/" />
+
+All values refer to the star-equivalent circuit. Between two terminals, two phases are measured
+in series, so the phase resistance and inductance are half of the measured values. For a
+delta-connected generator, the star equivalent behaves the same way at the terminals, so no
+conversion is necessary.
