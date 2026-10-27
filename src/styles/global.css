@@ -38,6 +38,13 @@
   --sidebar-accent-foreground: oklch(0.38 0.08 234.115);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.454 0.095 234.115);
+  /* Data visualization: categorical series, context lines and region washes */
+  --viz-1: #2a78d6;
+  --viz-2: #eb6834;
+  --viz-3: #1baf7a;
+  --viz-context: oklch(0.78 0 0);
+  --viz-grid: oklch(0.922 0 0);
+  --viz-wash: oklch(0.97 0 0);
 }
 
 .dark {
@@ -72,6 +79,12 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.72 0.1 234.115);
+  --viz-1: #3987e5;
+  --viz-2: #d95926;
+  --viz-3: #199e70;
+  --viz-context: oklch(0.45 0 0);
+  --viz-grid: oklch(1 0 0 / 10%);
+  --viz-wash: oklch(1 0 0 / 4%);
 }
 
 @theme inline {
