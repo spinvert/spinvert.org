@@ -1,0 +1,133 @@
+---
+title: Hardware
+description: Active rectifier, boost converter, bypass, dump load and measurements of the Spinvert Boost 4820.
+order: 4
+---
+
+import BoostExplorer from "~/lib/components/docs/BoostExplorer.svelte";
+import RectifierLosses from "~/lib/components/docs/RectifierLosses.svelte";
+
+The board consists of an active rectifier, a DC/DC boost converter with bypass, a dump load
+output and the measurement and control circuitry. The schematic and PCB are designed with KiCad,
+and the design files are available in the [GitHub repository](https://github.com/spinvert/).
+
+```
+                  +--------------+     +-----------------+
+3-phase   ------->|    Active    |--+->|  DC/DC boost    |--+------> DC output
+generator ------->| rectification|  |  |  (10 A @ 48 V)  |  |        (48 V)
+          ------->|   (20 A)     |  |  +-----------------+  |
+                  +--------------+  |                       |
+                                    +---- Bypass (20 A) ----+
+                                    |
+                                    +---> Dump load (20 A)
+```
+
+## Active rectifier
+
+The rectifier is a 3-phase bridge with six MOSFETs, two per phase. Instead of letting diodes
+decide when current flows, the MOSFETs are switched on while the corresponding diode would
+conduct, so that the current flows through the low channel resistance instead of a diode.
+
+The losses of a diode bridge and an active rectifier at DC current $I$ are approximately
+
+$$
+P_{diode} = 2 \, V_F \, I
+\qquad
+P_{active} = 2 \, R_{DS(on)} \, I^2
+$$
+
+with the diode forward voltage $V_F$ and the on-resistance $R_{DS(on)}$ of the MOSFETs. Two
+devices are always in the current path. The diode losses grow linearly with the current, while
+the MOSFET losses grow with its square, so the advantage is largest at low and medium currents.
+
+For a given power, the current is inversely proportional to the voltage. At low rectified
+voltages, i.e. at low wind speeds, the current is relatively high and the diode losses take a
+large share of the power. Compare both options:
+
+<RectifierLosses client:visible />
+
+{/* TODO: Add details about the MOSFETs, gate drivers and how the switching instants are determined. */}
+
+## Boost converter
+
+The boost converter steps the rectified voltage up to the battery voltage. A MOSFET (low-side
+switch) connects the inductor to ground and builds up a current. When it turns off, the inductor
+current flows to the output through a second MOSFET (high-side switch, synchronous rectifier).
+
+In continuous conduction mode (CCM), the duty cycle $D$ of the low-side switch only depends on
+the voltages:
+
+$$
+D = 1 - \frac{V_{in}}{V_{out}}
+$$
+
+During the on-time, the inductor current rises with a slope of $V_{in}/L$. The peak-to-peak
+ripple of the inductor current is
+
+$$
+\Delta I_L = \frac{V_{in} \cdot D}{L \cdot f_{sw}}
+$$
+
+With $L = 47\ \mu\text{H}$ and $f_{sw} = 128\ \text{kHz}$, the ripple reaches its maximum of
+about 2 A at $V_{in} = V_{out}/2$. If the average input current is lower than half the ripple,
+the inductor current drops to zero in every period, and the converter operates in discontinuous
+conduction mode (DCM). In DCM, the duty cycle depends on the load.
+
+The boost stage is rated for 10 A output current. With $V_{out} = 48$ V, this is about 480 W.
+At low input voltages, the input current $I_{in} = P / V_{in}$ becomes high, so the power is also
+limited by the current rating at the input.
+
+<BoostExplorer client:visible />
+
+The high switching frequency allows a small inductor, which is available as an off-the-shelf
+component. The input and output of the converter are filtered to meet EMC requirements.
+
+## Bypass
+
+When the rectified voltage reaches the battery voltage, the duty cycle of the boost converter
+approaches zero and boosting is no longer possible. In this case, the bypass connects the
+rectifier output directly to the battery. The bypass is rated for 20 A and has only conduction
+losses.
+
+In bypass mode, the battery voltage determines the rectified voltage. The current is then given
+by the generator voltage, the battery voltage and the internal resistance of the generator, as
+described in [Optimal operation](/docs/optimal-operation/#limits-of-the-board).
+
+## Dump load
+
+The dump load output is connected to the rectified voltage, in parallel to the boost converter
+and the bypass. It can carry up to 20 A. Any resistive load can be used, e.g. heating elements
+for water or air.
+
+The resistance of the dump load determines how much power it can absorb at a given voltage:
+
+$$
+I = \frac{V_{dc}}{R_{dump}}
+\qquad
+P = \frac{V_{dc}^2}{R_{dump}}
+$$
+
+The resistance should be chosen such that the current stays below 20 A at the maximum input
+voltage of 60 V, i.e. $R_{dump} \geq 3\ \Omega$. A 3 Ω load absorbs 768 W at 48 V and 1200 W
+at 60 V, so its power rating must be sufficient for continuous operation.
+
+{/* TODO: Describe how the dump load is switched (on/off or PWM) and the connector. */}
+
+## Measurements
+
+The control of the board is based on the following measurements:
+
+- **AC voltages** of the generator phases, used to determine the electrical frequency and thus
+  the speed of the generator
+- **Rectified voltage** at the input of the boost converter
+- **Boost converter input current**, controlled according to the lookup curve
+
+The speed is calculated from the frequency as $n = 120 \, f_e / p$, which requires the pole count
+$p$ of the generator to be configured.
+
+## Interfaces
+
+- **USB** for monitoring and debugging
+- **CAN-FD** for integration with other devices, e.g. battery management systems
+
+{/* TODO: Add connector pinouts, dimensions and a photo of the board. */}
