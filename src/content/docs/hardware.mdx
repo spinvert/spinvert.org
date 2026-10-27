@@ -11,17 +11,6 @@ The board consists of an active rectifier, a DC/DC boost converter with bypass, 
 output and the measurement and control circuitry. The schematic and PCB are designed with KiCad,
 and the design files are available in the [GitHub repository](https://github.com/spinvert/).
 
-```
-                  +--------------+     +-----------------+
-3-phase   ------->|    Active    |--+->|  DC/DC boost    |--+------> DC output
-generator ------->| rectification|  |  |  (10 A @ 48 V)  |  |        (48 V)
-          ------->|   (20 A)     |  |  +-----------------+  |
-                  +--------------+  |                       |
-                                    +---- Bypass (20 A) ----+
-                                    |
-                                    +---> Dump load (20 A)
-```
-
 ## Active rectifier
 
 The rectifier is a 3-phase bridge with six MOSFETs, two per phase. Instead of letting diodes
