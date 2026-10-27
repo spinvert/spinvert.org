@@ -4,7 +4,9 @@ import { defineConfig, fontProviders } from "astro/config";
 import mdx from "@astrojs/mdx";
 import svelte from "@astrojs/svelte";
 
+import { satteri } from "@astrojs/markdown-satteri";
 import tailwindcss from "@tailwindcss/vite";
+import { katexPlugin } from "./src/lib/markdown/katex.ts";
 
 // https://astro.build/config
 export default defineConfig({
@@ -13,6 +15,10 @@ export default defineConfig({
     format: "directory",
   },
   trailingSlash: "always",
+  markdown: {
+    // LaTeX math with $...$ (inline) and $$...$$ (block), rendered to HTML at build time
+    processor: satteri({ features: { math: true }, hastPlugins: [katexPlugin] }),
+  },
   vite: {
     plugins: [tailwindcss()],
   },
