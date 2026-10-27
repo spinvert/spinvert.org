@@ -5,14 +5,16 @@
     angularSpeed,
     currentForShaftPower,
     openCircuitDcVoltage,
+    rewindGenerator,
   } from "$lib/calc/generator";
   import {
     type Mode,
     type WindSystem,
     boostPowerLimit,
     controlPoint,
-    directControlPoint,
     lookupCurve,
+    noBoostControlPoint,
+    noBoostSteadyState,
     steadyState,
   } from "$lib/calc/operating";
   import {
@@ -23,6 +25,7 @@
     rotorPower,
     runawayTsr,
   } from "$lib/calc/wind";
+  import { HOURS_PER_YEAR, annualEnergy, weibullDensity } from "$lib/calc/weibull";
   import { type Band, type Series, fmt } from "./chart";
   import LineChart from "./LineChart.svelte";
   import NumberField from "./NumberField.svelte";
@@ -40,7 +43,17 @@
     batteryVoltage: 48,
     boostEfficiency: 95,
     curvePoints: 16,
+    meanWindSpeed: 4.5,
+    weibullShape: 2,
   };
+
+  // Rough annual mean wind speeds at the hub height of small wind turbines (10 to 20 m)
+  const sitePresets = [
+    { label: "Sheltered inland", meanWindSpeed: 3.5 },
+    { label: "Open inland", meanWindSpeed: 4.5 },
+    { label: "Coastal", meanWindSpeed: 5.5 },
+    { label: "Exposed coast or hilltop", meanWindSpeed: 7 },
+  ];
 
   let diameter = $state(defaults.diameter);
   let cpMax = $state(defaults.cpMax);
@@ -53,10 +66,12 @@
   let batteryVoltage = $state(defaults.batteryVoltage);
   let boostEfficiency = $state(defaults.boostEfficiency);
   let curvePoints = $state(defaults.curvePoints);
+  let meanWindSpeed = $state(defaults.meanWindSpeed);
+  let weibullShape = $state(defaults.weibullShape);
 
   function reset() {
     ({ diameter, cpMax, tsrOpt, airDensity, poles, ke, resistance, inductance } = defaults);
-    ({ batteryVoltage, boostEfficiency, curvePoints } = defaults);
+    ({ batteryVoltage, boostEfficiency, curvePoints, meanWindSpeed, weibullShape } = defaults);
   }
 
   // Generator parameters can be passed from the characterization tool via URL parameters
@@ -139,10 +154,10 @@
             points: controlGrid.map((p): [number, number] => [p.rpm, p.shaftPower]),
           },
           {
-            id: "direct",
-            label: "Load with diodes to battery",
+            id: "no-boost",
+            label: "Load without boost stage",
             color: "var(--viz-3)",
-            points: rpmGrid.map((rpm): [number, number] => [rpm, directControlPoint(sys, rpm).shaftPower]),
+            points: rpmGrid.map((rpm): [number, number] => [rpm, noBoostControlPoint(sys, rpm).shaftPower]),
           },
         ]
       : [],
@@ -178,6 +193,17 @@
   ]);
 
   // Chart 3: output power over wind speed
+  const boardPowerCurve = $derived(
+    [[0, 0] as [number, number]].concat(
+      states.map((s): [number, number] => [s.windSpeed, s.board.outputPower]),
+    ),
+  );
+  const noBoostPowerCurve = $derived(
+    [[0, 0] as [number, number]].concat(
+      states.map((s): [number, number] => [s.windSpeed, s.noBoost.outputPower]),
+    ),
+  );
+
   const yieldSeries: Series[] = $derived(
     valid
       ? [
@@ -194,17 +220,84 @@
             id: "board",
             label: "Output with Spinvert",
             color: "var(--viz-1)",
-            points: [[0, 0] as [number, number]].concat(
-              states.map((s): [number, number] => [s.windSpeed, s.board.outputPower]),
-            ),
+            points: boardPowerCurve,
           },
           {
-            id: "direct",
-            label: "Output with diodes to battery (20 A max.)",
+            id: "no-boost",
+            label: "Output without boost stage",
             color: "var(--viz-3)",
-            points: [[0, 0] as [number, number]].concat(
-              states.map((s): [number, number] => [s.windSpeed, s.direct.outputPower]),
-            ),
+            points: noBoostPowerCurve,
+          },
+        ]
+      : [],
+  );
+
+  // Energy yield weighted with the wind speed distribution of the site
+  const siteValid = $derived(
+    typeof meanWindSpeed === "number" &&
+      meanWindSpeed > 0 &&
+      typeof weibullShape === "number" &&
+      weibullShape >= 1 &&
+      weibullShape <= 4,
+  );
+
+  const energyBoard = $derived(
+    siteValid ? annualEnergy(boardPowerCurve, meanWindSpeed, weibullShape) : 0,
+  );
+  const energyNoBoost = $derived(
+    siteValid ? annualEnergy(noBoostPowerCurve, meanWindSpeed, weibullShape) : 0,
+  );
+
+  // A system without boost stage would use a generator with a higher voltage constant. For a
+  // fair comparison, find the best rewound version of the generator for this case.
+  const rewound = $derived.by(() => {
+    if (!valid || !siteValid) return undefined;
+    let best = { ke: ke, energy: 0, curve: noBoostPowerCurve };
+    for (let factor = 0.8; factor <= 3.001; factor += 0.05) {
+      const rewoundSys = { ...sys, generator: rewindGenerator(sys.generator, ke * factor) };
+      const curve = [[0, 0] as [number, number]].concat(
+        states.map((s): [number, number] => [
+          s.windSpeed,
+          noBoostSteadyState(rewoundSys, s.windSpeed).outputPower,
+        ]),
+      );
+      const energy = annualEnergy(curve, meanWindSpeed, weibullShape);
+      if (energy > best.energy) best = { ke: ke * factor, energy, curve };
+    }
+    return best;
+  });
+
+  const gain = (energy: number, reference: number) =>
+    reference > 0 ? `+${Math.round((energy / reference - 1) * 100)} % with Spinvert` : "";
+
+  // Annual energy per wind speed interval [kWh/(m/s)]
+  const energyDensity = (curve: [number, number][]) =>
+    curve.map(([v, p]): [number, number] => [
+      v,
+      (p * weibullDensity(v, meanWindSpeed, weibullShape) * HOURS_PER_YEAR) / 1000,
+    ]);
+
+  const energySeries: Series[] = $derived(
+    valid && siteValid && rewound
+      ? [
+          {
+            id: "board",
+            label: "Spinvert",
+            color: "var(--viz-1)",
+            points: energyDensity(boardPowerCurve),
+          },
+          {
+            id: "no-boost",
+            label: "Without boost stage",
+            color: "var(--viz-3)",
+            points: energyDensity(noBoostPowerCurve),
+          },
+          {
+            id: "no-boost-rewound",
+            label: "Without boost stage, rewound generator",
+            color: "var(--viz-3)",
+            dashed: true,
+            points: energyDensity(rewound.curve),
           },
         ]
       : [],
@@ -386,7 +479,7 @@
               <th class="py-1 pr-3 font-normal">Rectified (V)</th>
               <th class="py-1 pr-3 font-normal">Current (A)</th>
               <th class="py-1 pr-3 font-normal">Output (W)</th>
-              <th class="py-1 font-normal">Diodes to battery (W)</th>
+              <th class="py-1 font-normal">Without boost (W)</th>
             </tr>
           </thead>
           <tbody>
@@ -398,13 +491,85 @@
                 <td class="py-1 pr-3">{fmt(s.board.voltage)}</td>
                 <td class="py-1 pr-3">{fmt(s.board.current)}</td>
                 <td class="py-1 pr-3">{fmt(s.board.outputPower)}</td>
-                <td class="py-1">{fmt(s.direct.outputPower)}</td>
+                <td class="py-1">{fmt(s.noBoost.outputPower)}</td>
               </tr>
             {/each}
           </tbody>
         </table>
       </div>
     </details>
+
+    <h3 class="mt-8 text-sm font-medium">Annual energy yield</h3>
+    <p class="mt-1 text-xs text-muted-foreground">
+      The output power is weighted with a Weibull distribution of the wind speed at the site.
+    </p>
+    <div class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Site presets">
+      {#each sitePresets as preset (preset.label)}
+        <button
+          type="button"
+          aria-pressed={meanWindSpeed === preset.meanWindSpeed}
+          onclick={() => (meanWindSpeed = preset.meanWindSpeed)}
+          class="h-8 rounded-md border px-3 text-sm hover:bg-accent hover:text-accent-foreground aria-pressed:border-primary aria-pressed:bg-accent aria-pressed:text-accent-foreground"
+        >
+          {preset.label} ({preset.meanWindSpeed} m/s)
+        </button>
+      {/each}
+    </div>
+    <div class="mt-3 grid gap-6 sm:grid-cols-3">
+      <NumberField
+        label="Annual mean wind speed at hub height"
+        bind:value={meanWindSpeed}
+        unit="m/s"
+        min={1}
+        max={12}
+        step={0.1}
+      />
+      <NumberField
+        label="Weibull shape factor k"
+        bind:value={weibullShape}
+        min={1}
+        max={4}
+        step={0.1}
+        hint="2 (Rayleigh) if unknown"
+      />
+    </div>
+
+    {#if siteValid && rewound}
+      <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <Stat label="With Spinvert" value={fmt(energyBoard)} unit="kWh/year" />
+        <Stat
+          label="Without boost stage, same generator"
+          value={fmt(energyNoBoost)}
+          unit="kWh/year"
+          hint={gain(energyBoard, energyNoBoost)}
+        />
+        <Stat
+          label={`Without boost stage, rewound generator (k_e = ${fmt(rewound.ke)} V/krpm)`}
+          value={fmt(rewound.energy)}
+          unit="kWh/year"
+          hint={gain(energyBoard, rewound.energy)}
+        />
+      </div>
+
+      <LineChart
+        title="Annual energy per wind speed"
+        series={energySeries}
+        xLabel="Wind speed (m/s)"
+        yLabel="Energy (kWh per m/s)"
+        xUnit="m/s"
+        yUnit="kWh/(m/s)"
+        xMax={16}
+        height={260}
+      />
+      <p class="text-xs text-muted-foreground">
+        The area below each curve is the annual energy. The rewound generator has the same magnets
+        and copper volume, but the voltage constant giving the highest yield without boost stage.
+      </p>
+    {:else}
+      <p class="mt-4 rounded-md border border-destructive/50 px-3 py-2 text-sm text-destructive">
+        Please enter a positive mean wind speed and a shape factor between 1 and 4.
+      </p>
+    {/if}
 
     <LineChart
       title="Lookup curve for the firmware: boost input current over generator frequency"
