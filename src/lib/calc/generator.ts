@@ -154,6 +154,20 @@ export function currentAtClampedVoltage(
   return Math.max(0, (v0 - drop - voltage) / (xc + r));
 }
 
+/**
+ * Generator with the same magnets and copper volume, but rewound for a different voltage
+ * constant. The number of turns scales with k_e, so resistance and inductance scale with k_e².
+ */
+export function rewindGenerator(gen: Generator, ke: number): Generator {
+  const factor = (ke / gen.ke) ** 2;
+  return {
+    ...gen,
+    ke,
+    phaseResistance: gen.phaseResistance * factor,
+    phaseInductance: gen.phaseInductance * factor,
+  };
+}
+
 export interface GeneratorMeasurement {
   /** Speed during the measurement [rpm] */
   rpm: number;

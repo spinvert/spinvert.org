@@ -6,13 +6,16 @@ import {
   type Generator,
   type Rectifier,
   characterizeGenerator,
+  copperLosses,
   currentForShaftPower,
   dcOperatingPoint,
   electricalFrequency,
   openCircuitDcVoltage,
+  rewindGenerator,
   rpmFromFrequency,
 } from "./generator";
 import { type WindSystem, controlPoint, lookupCurve, steadyState } from "./operating";
+import { annualEnergy, gamma, weibullDensity, weibullScale } from "./weibull";
 import {
   type Turbine,
   maxRotorPower,
@@ -54,6 +57,15 @@ describe("generator", () => {
 
   test("current for shaft power beyond generator capability", () => {
     expect(currentForShaftPower(generator, 100, 1e6)).toBeUndefined();
+  });
+
+  test("rewound generator", () => {
+    const rewound = rewindGenerator(generator, 140);
+    expect(rewound.ke).toBe(140);
+    expect(rewound.phaseResistance).toBeCloseTo(generator.phaseResistance * 4, 10);
+    expect(rewound.phaseInductance).toBeCloseTo(generator.phaseInductance * 4, 10);
+    // Same copper losses for the same power: half the current at twice the voltage
+    expect(copperLosses(rewound, 5)).toBeCloseTo(copperLosses(generator, 10), 10);
   });
 
   test("characterization from measurements", () => {
@@ -105,8 +117,8 @@ describe("operating point", () => {
     expect(state.board.shaftPower).toBeCloseTo(state.idealPower, -1);
   });
 
-  test("direct connection produces nothing at low wind speeds", () => {
-    expect(steadyState(system, 4).direct.outputPower).toBe(0);
+  test("no output without boost stage at low wind speeds", () => {
+    expect(steadyState(system, 4).noBoost.outputPower).toBe(0);
   });
 
   test("board respects the output current ratings", () => {
@@ -165,5 +177,35 @@ describe("boost converter", () => {
     const wave = inductorCurrentWaveform(conv, op, 2);
     expect(wave).toHaveLength(7);
     expect(Math.max(...wave.map(([, i]) => i))).toBeCloseTo(op.peakCurrent, 6);
+  });
+});
+
+describe("wind distribution", () => {
+  test("gamma function", () => {
+    expect(gamma(1)).toBeCloseTo(1, 10);
+    expect(gamma(5)).toBeCloseTo(24, 8);
+    expect(gamma(1.5)).toBeCloseTo(Math.sqrt(Math.PI) / 2, 10);
+  });
+
+  test("Rayleigh distribution", () => {
+    // For k = 2, c = 2·v_mean/√π
+    expect(weibullScale(5, 2)).toBeCloseTo((2 * 5) / Math.sqrt(Math.PI), 8);
+  });
+
+  test("density integrates to one and has the given mean", () => {
+    let total = 0;
+    let mean = 0;
+    for (let v = 0.005; v < 40; v += 0.01) {
+      total += weibullDensity(v, 5, 2.3) * 0.01;
+      mean += v * weibullDensity(v, 5, 2.3) * 0.01;
+    }
+    expect(total).toBeCloseTo(1, 4);
+    expect(mean).toBeCloseTo(5, 3);
+  });
+
+  test("annual energy of constant power", () => {
+    const curve: [number, number][] = [];
+    for (let v = 0; v <= 40; v += 0.05) curve.push([v, 1000]);
+    expect(annualEnergy(curve, 5, 2)).toBeCloseTo(8760, 0);
   });
 });

@@ -122,13 +122,14 @@ export function controlPoint(sys: WindSystem, rpm: number): ControlPoint {
 }
 
 /**
- * Behavior with a passive diode rectifier connected directly to the battery, assuming the same
- * current rating as the bypass of the board for comparison
+ * Behavior without the boost stage: the active rectifier is always connected directly to the
+ * battery (like the bypass), with the same current rating. Used to quantify the benefit of the
+ * boost stage.
  */
-export function directControlPoint(sys: WindSystem, rpm: number): ControlPoint {
+export function noBoostControlPoint(sys: WindSystem, rpm: number): ControlPoint {
   const { generator, rectifier, batteryVoltage } = sys;
-  const current = currentAtClampedVoltage(generator, rectifier, false, rpm, batteryVoltage);
-  const point = dcOperatingPoint(generator, rectifier, false, rpm, current);
+  const current = currentAtClampedVoltage(generator, rectifier, true, rpm, batteryVoltage);
+  const point = dcOperatingPoint(generator, rectifier, true, rpm, current);
   const outputPower = Math.min(point.power, batteryVoltage * board.bypassMaxCurrent);
   return {
     rpm,
@@ -149,8 +150,8 @@ export interface SteadyState {
   idealPower: number;
   /** Operating point with the Spinvert Boost */
   board: ControlPoint;
-  /** Operating point with a diode rectifier connected directly to the battery */
-  direct: ControlPoint;
+  /** Operating point without boost stage (rectifier always connected to the battery) */
+  noBoost: ControlPoint;
 }
 
 /**
@@ -182,12 +183,17 @@ function equilibrium(
   return load(0);
 }
 
+/** Operating point without boost stage at the given wind speed */
+export function noBoostSteadyState(sys: WindSystem, windSpeed: number): ControlPoint {
+  return equilibrium(sys, windSpeed, (rpm) => noBoostControlPoint(sys, rpm));
+}
+
 export function steadyState(sys: WindSystem, windSpeed: number): SteadyState {
   return {
     windSpeed,
     idealPower: maxRotorPower(sys.turbine, windSpeed),
     board: equilibrium(sys, windSpeed, (rpm) => controlPoint(sys, rpm)),
-    direct: equilibrium(sys, windSpeed, (rpm) => directControlPoint(sys, rpm)),
+    noBoost: noBoostSteadyState(sys, windSpeed),
   };
 }
 
