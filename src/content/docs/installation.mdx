@@ -1,0 +1,63 @@
+---
+title: Installation and safety
+description: Guidance for setting up a system with the Spinvert Boost, including safety considerations for wind turbines.
+order: 6
+---
+
+import Callout from "~/components/Callout.astro";
+
+<Callout type="caution" title="Early development stage">
+  The board is not yet ready for unattended operation. Use it only for testing and development,
+  under supervision and with the safety measures described below.
+</Callout>
+
+## System overview
+
+A typical system consists of the following components:
+
+- **Wind turbine** (or other generator) with a 3-phase permanent magnet generator
+- **Stop switch** that shorts the generator phases to brake the turbine
+- **Spinvert Boost** board
+- **Dump load**, e.g. a heating element, connected to the dump load output
+- **48 V battery** with fuse and, ideally, a battery management system
+- Loads or an **off-grid inverter** connected to the battery
+
+## Safety
+
+**Never leave the turbine without load.** A wind turbine without load accelerates to its runaway
+speed. Besides the mechanical stress, the generator voltage rises with the speed and can exceed
+the input voltage rating of 60 V. Make sure that a dump load is always connected and that the
+turbine can be stopped independent of the electronics.
+
+**Stop switch:** Shorting the three phases of a permanent magnet generator brakes the rotor
+electrically. Install a switch rated for the short-circuit current of the generator between the
+turbine and the board, so that the turbine can be stopped before working on the system. Activate
+the switch at low wind speeds only, as the braking at high speeds causes high currents and
+mechanical loads.
+
+**Battery fuse:** Install a fuse or circuit breaker as close as possible to the positive battery
+terminal. Batteries can deliver very high short-circuit currents.
+
+**Cables:** Size the cables for the maximum current of 20 A and keep the voltage drop low,
+especially between generator and board. At low wind speeds, the generator voltage is only a few
+volts, so a voltage drop of 1 V already causes a significant loss.
+
+**Lightning and grounding:** Wind turbine towers are exposed to lightning. Ground the tower and
+consider surge protection on the cables from the turbine.
+
+## Commissioning
+
+1. Determine the generator parameters, either from the data sheet or by
+   [measurement](/docs/generator/#measuring-your-generator).
+2. Calculate the lookup curve with the [calculator](/docs/optimal-operation/#calculator). Check
+   that the input voltage rating is respected and that the dump load can absorb the expected
+   power.
+3. Install the system with the stop switch activated.
+4. Connect the battery and check the configuration via USB.
+5. Release the stop switch at low wind speeds and monitor the operating mode, speed, voltages and
+   currents.
+6. Compare the measured operating points with the values from the calculator. If the rotor runs
+   consistently faster or slower than expected, adjust $C_{p,max}$ and $\lambda_{opt}$ and
+   recalculate the curve.
+
+{/* TODO: Add connection diagram, connector assignment, wire gauges and terminal torques. */}

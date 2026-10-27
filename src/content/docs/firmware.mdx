@@ -1,0 +1,73 @@
+---
+title: Firmware
+description: Control concept and operating modes of the Spinvert Boost firmware.
+order: 5
+---
+
+import Callout from "~/components/Callout.astro";
+import PowerFlowDiagram from "~/lib/components/docs/PowerFlowDiagram.svelte";
+
+The Spinvert Boost will be supported by the generic
+[Libre Solar charge controller firmware](https://github.com/LibreSolar/charge-controller-firmware),
+which already provides battery charging algorithms, data logging and communication via the
+ThingSet protocol.
+
+<Callout type="caution" title="Work in progress">
+  Support for this board in the firmware is currently in progress. This page describes the
+  control concept. Details may change during development.
+</Callout>
+
+## Control concept
+
+The firmware controls the generator current according to a lookup curve, as derived in
+[Optimal operation](/docs/optimal-operation/). In every control cycle, it performs the following
+steps:
+
+1. **Measure the frequency** of the AC generator voltage.
+2. **Calculate the speed** from the frequency and the configured pole count:
+   $n = 120 \, f_e / p$.
+3. **Look up the target current** for this speed. Between the points of the curve, the value is
+   interpolated linearly.
+4. **Control the boost converter** such that its input current matches the target current. The
+   current is limited further if the output current or other limits are reached.
+
+The resulting closed loop is stable without any knowledge of the wind speed: if the rotor is
+faster than optimal, the target current is higher than the current the rotor can sustain, so it
+slows down, and vice versa. The rotor inertia acts as a natural filter for gusts.
+
+Using the frequency instead of the rectified voltage as input of the curve has an important
+advantage: the voltage depends on the current because of the voltage drops in the generator,
+while the frequency is an exact measure of the speed.
+
+## Operating modes
+
+The board switches between the following modes:
+
+| Mode      | Condition                                            | Action                                                          |
+| --------- | ---------------------------------------------------- | --------------------------------------------------------------- |
+| Standby   | Generator speed too low to deliver power             | No load on the generator, so that the rotor can start up        |
+| Boost     | Rectified voltage below battery voltage              | Boost converter tracks the lookup curve                         |
+| Bypass    | Rectified voltage reaches battery voltage            | Rectifier connected directly to the battery                     |
+| Dump load | Battery full, overspeed or current above rating      | Generator loaded by the dump load to limit speed and voltage    |
+
+<PowerFlowDiagram client:visible />
+
+{/* TODO: Add the exact thresholds and hysteresis for mode transitions once implemented. */}
+
+## Battery charging
+
+The battery is charged according to the charging algorithm of the Libre Solar firmware. When
+the battery is full, the charge current has to be reduced. For a wind turbine, simply reducing
+the current is not an option, as the rotor would accelerate. Instead, the excess power is diverted
+to the dump load.
+
+## Configuration and monitoring
+
+The configuration parameters of the generator and the lookup curve are planned to be accessible
+via the ThingSet protocol over USB or CAN-FD. The same interfaces provide live data such as
+generator frequency, voltages, currents and operating mode.
+
+The lookup curve can be calculated with the
+[calculator](/docs/optimal-operation/#calculator), which exports the curve as CSV or JSON.
+
+{/* TODO: Document the ThingSet data objects for the curve and the generator parameters. */}
