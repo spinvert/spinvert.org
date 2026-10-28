@@ -1,0 +1,87 @@
+---
+title: Operating curve
+description: Lookup curve for the Spinvert Boost 4820 firmware, the limits of the board, generator selection and a calculator for operating points and energy yield.
+order: 4
+---
+
+import Callout from "~/components/Callout.astro";
+import OperatingCurveCalculator from "~/lib/components/docs/OperatingCurveCalculator.svelte";
+
+The firmware of the Spinvert Boost controls the input current of the boost converter according
+to a lookup curve over the generator frequency. The curve follows the optimal power curve of the
+wind turbine, as derived in [Optimal operation](/theory/optimal-operation/). This page describes
+how the ratings of the board affect the operation and contains a calculator for the curve.
+
+## Limits of the board
+
+The general limits are described in
+[Optimal operation](/theory/optimal-operation/#limits-of-the-power-electronics). For the Spinvert
+Boost 4820, the optimal curve can't be followed in the following cases:
+
+- **Boost power limit:** The boost converter delivers up to 10 A at the battery voltage, i.e.
+  about 480 W at 48 V. If the optimal power is higher, the current is limited. The rotor then
+  accelerates beyond its optimal speed until the rotor power matches the limit.
+- **Bypass:** Once the rectified voltage reaches the battery voltage, the boost converter can't
+  operate anymore and the board switches to bypass. The generator is now connected directly to
+  the battery, and the current is determined by the difference between generator voltage and
+  battery voltage:
+  $$
+  I = \frac{V_{dc,0} - V_{bat}}{2R + X_c + 2R_{DS(on)}}
+  $$
+  The board can't control the operating point in this mode. Above 20 A, the ratings of bypass
+  and rectifier are exceeded and the turbine has to be slowed down by other means.
+
+## Choosing a generator
+
+The voltage constant $k_e$ of the generator determines at which wind speed the board switches
+from boost to bypass:
+
+- With a **high** $k_e$, the rectified voltage reaches the battery voltage at low wind speeds.
+  The board operates in bypass mode most of the time, and the benefit of the boost converter is
+  small. In the extreme case, the behavior is the same as a direct battery connection.
+- With a **low** $k_e$, the generator needs higher currents for the same power, which increases
+  the copper losses. The boost power limit is reached before the bypass is possible, and the
+  rotor runs faster than optimal in a wide range of wind speeds.
+
+A good match is reached if the bypass starts at about the same wind speed as the boost power
+limit, and the load line in bypass mode stays close to the optimal curve. Also check that the
+open-circuit voltage at the maximum expected speed doesn't exceed the input voltage rating of
+60 V, or make sure that the turbine is always loaded.
+
+## Benefit of the boost stage
+
+The calculator estimates the annual energy for a site, as described in
+[Energy yield](/theory/energy-yield/). It compares the Spinvert Boost with the same board without
+boost stage, i.e. the active rectifier always connected directly to the battery. With the same
+generator, the
+comparison favors the Spinvert Boost, because a generator for a system without boost stage would
+be designed for a higher voltage. The calculator therefore also determines the best rewound
+version of the generator for this case: same magnets and copper volume, but a different number of
+turns, so that resistance and inductance scale with $k_e^2$.
+
+For the example turbine, the Spinvert Boost yields about 18 % more energy than the system with
+the optimized generator at a sheltered site with 3.5 m/s mean wind speed. At 6.5 m/s, the
+advantage drops to about 6 %. Compared to the same generator without boost stage, the gain is
+much larger at low wind speeds. The boost stage pays off most at sites with low mean wind speeds
+and when the generator can't be chosen freely.
+
+## Calculator
+
+The calculator below determines the optimal operating curve for a wind turbine and simulates the
+resulting operating points with the Spinvert Boost. For comparison, it also shows the same board
+without boost stage, where the active rectifier is always connected directly to the battery.
+
+If you don't know the parameters of your generator, measure them as described in
+[Generators](/theory/generators/#measuring-your-generator). The rotor parameters $C_{p,max}$
+and $\lambda_{opt}$ can often be found in the data sheet of the turbine or blades. If not, values
+of 0.35 and 6 are a reasonable starting point for 3-bladed rotors.
+
+<OperatingCurveCalculator client:visible />
+
+<Callout title="Assumptions">
+  The calculation assumes steady-state conditions and a generic shape of the $C_p(\lambda)$ curve,
+  scaled to the given $C_{p,max}$ and $\lambda_{opt}$. Friction and iron losses of the generator,
+  losses in cables and the voltage drop of the bypass are neglected. MOSFETs of the active
+  rectifier are assumed to have 5 mΩ on-resistance. Output at wind speeds above 20 m/s
+  is ignored in the energy yield.
+</Callout>

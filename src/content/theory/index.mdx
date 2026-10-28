@@ -4,7 +4,40 @@ description: Background on small wind turbines, micro hydro and pedal generators
 order: 0
 ---
 
-This section explains the background behind the Spinvert hardware: how small wind turbines,
-micro hydro turbines and pedal generators convert mechanical power to electricity, and how this
-power is transferred to a battery as efficiently as possible. The content is independent of a
-specific product. For the Spinvert Boost 4820, see the [hardware documentation](/hardware/boost-4820/).
+This section explains the background behind the Spinvert hardware: how small wind turbines, micro
+hydro turbines and pedal generators convert mechanical power to electricity, and how this power
+is transferred to a battery as efficiently as possible. The content is independent of a specific
+product. For the Spinvert Boost 4820, see the [hardware documentation](/hardware/boost-4820/).
+
+## From rotation to battery charge
+
+A small renewable energy system with a rotating source consists of the following chain:
+
+1. **Mechanical source:** A wind rotor, water turbine or pedal crank delivers mechanical power.
+   Its power depends on the speed in a characteristic way, with an optimum at a certain speed.
+2. **Generator:** A 3-phase permanent magnet generator converts the mechanical power to AC
+   with a voltage and frequency proportional to the speed.
+3. **Rectifier:** The 3-phase AC is converted to DC.
+4. **DC/DC converter:** The rectified voltage is matched to the battery voltage. At the same
+   time, the converter controls the current drawn from the generator and thus the load on the
+   source.
+5. **Battery and loads:** The energy is stored in a battery or used directly, e.g. via an
+   off-grid inverter.
+
+Each stage causes losses, and the stages influence each other. For example, the generator
+voltage determines which converter topology is suitable, and the converter determines whether
+the source can be operated at its optimum.
+
+## Contents
+
+- [Generators](/theory/generators/) describes the model of a permanent magnet generator and how
+  to measure its parameters.
+- [Rectifiers](/theory/rectifiers/) compares diode bridges, active rectifiers and controlled
+  rectifiers.
+- [DC/DC converters](/theory/converters/) compares direct battery connection, buck, boost and
+  buck-boost converters.
+- [Optimal operation](/theory/optimal-operation/) derives the optimal operating curve of a wind
+  turbine and the methods to track it.
+- [Energy yield](/theory/energy-yield/) explains how to estimate the annual energy using the wind
+  speed distribution at the site.
+- [Other sources](/theory/other-sources/) applies the concepts to micro hydro and pedal power.

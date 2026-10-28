@@ -1,16 +1,13 @@
 ---
 title: Optimal operation
-description: Derivation of the optimal operating curve of a wind turbine and a calculator for the lookup curve used by the Spinvert Boost firmware.
+description: Power and tip speed ratio of wind rotors, the optimal operating curve, and methods to track it.
 order: 4
 ---
 
-import Callout from "~/components/Callout.astro";
-import OperatingCurveCalculator from "~/lib/components/docs/OperatingCurveCalculator.svelte";
-
 A wind turbine delivers its maximum power only at one particular speed for a given wind speed.
 If the generator draws too little current, the rotor spins too fast. If it draws too much, the
-rotor slows down and may even stall. This page explains how the Spinvert Boost keeps the turbine
-at its optimum and how the lookup curve for the firmware is calculated.
+rotor slows down and may even stall. This page derives the optimal operating curve and explains
+how it can be tracked by the power electronics.
 
 ## Power in the wind
 
@@ -66,13 +63,13 @@ $P_{opt}(\omega)$, the rotor settles at its optimal speed for any wind speed:
 - If the wind speed decreases, the generator load exceeds the rotor power, so the rotor slows
   down accordingly.
 
-This is the operating principle of the Spinvert Boost. It doesn't need a wind speed sensor, only
-the rotor speed, which is derived from the generator frequency.
+This control principle doesn't need a wind speed sensor, only the rotor speed. The speed can be
+derived from the frequency of the generator voltage.
 
 ## From power to generator current
 
-The firmware controls the input current of the boost converter, so the optimal power curve has
-to be translated into a current. Using the [generator model](/theory/generators/#generator-under-load),
+Power electronics usually control the current drawn from the generator, so the optimal power
+curve has to be translated into a current. Using the [generator model](/theory/generators/#generator-under-load),
 the shaft power at DC current $I$ is
 
 $$
@@ -92,129 +89,45 @@ every speed and stored as a lookup curve over the electrical frequency. If the t
 square root becomes negative, the generator can't deliver the optimal power at this speed because
 of its inductance.
 
-## Limits of the board
+## Tracking methods
 
-The optimal curve can't be followed at all wind speeds:
+There are two common approaches to keep a wind turbine at its optimum.
 
-- **Boost power limit:** The boost converter delivers up to 10 A at the battery voltage, i.e.
-  about 480 W at 48 V. If the optimal power is higher, the current is limited. The rotor then
-  accelerates beyond its optimal speed until the rotor power matches the limit.
-- **Bypass:** Once the rectified voltage reaches the battery voltage, the boost converter can't
-  operate anymore and the board switches to bypass. The generator is now connected directly to
-  the battery, and the current is determined by the difference between generator voltage and
-  battery voltage:
-  $$
-  I = \frac{V_{dc,0} - V_{bat}}{2R + X_c + 2R_{DS(on)}}
-  $$
-  The board can't control the operating point in this mode. Above 20 A, the ratings of bypass
-  and rectifier are exceeded and the turbine has to be slowed down by other means.
+**Perturb and observe:** Solar charge controllers usually find the maximum power point by
+changing the operating point a little and checking whether the power increased. This doesn't work
+well for wind turbines:
 
-## Choosing a generator
+- The rotor has a large inertia. After a change of the generator current, the measured power is
+  dominated by the rotor accelerating or slowing down, not by the aerodynamic power.
+- The wind speed changes continuously, so the controller can't tell whether a power change was
+  caused by its own action or by a gust.
 
-The voltage constant $k_e$ of the generator determines at which wind speed the board switches
-from boost to bypass:
+**Lookup curve:** If the rotor characteristics are known, the optimal current can be calculated
+for every speed as described above and stored as a curve. The controller measures the speed and
+sets the current accordingly. This is fast and robust, and the closed loop is stable without any
+knowledge of the wind speed: if the rotor is faster than optimal, the current is higher than the
+rotor can sustain, so it slows down, and vice versa. The rotor inertia acts as a natural filter
+for gusts. The drawback is that the curve has to be determined for each combination of rotor and
+generator.
 
-- With a **high** $k_e$, the rectified voltage reaches the battery voltage at low wind speeds.
-  The board operates in bypass mode most of the time, and the benefit of the boost converter is
-  small. In the extreme case, the behavior is the same as a direct battery connection.
-- With a **low** $k_e$, the generator needs higher currents for the same power, which increases
-  the copper losses. The boost power limit is reached before the bypass is possible, and the
-  rotor runs faster than optimal in a wide range of wind speeds.
+Measuring the speed via the generator frequency has an important advantage over using the
+voltage: the voltage depends on the current because of the voltage drops in the generator, while
+the frequency is an exact measure of the speed.
 
-A good match is reached if the bypass starts at about the same wind speed as the boost power
-limit, and the load line in bypass mode stays close to the optimal curve. Also check that the
-open-circuit voltage at the maximum expected speed doesn't exceed the input voltage rating of
-60 V, or make sure that the turbine is always loaded.
+## Limits of the power electronics
 
-## Energy yield
+In practice, the optimal curve can't be followed at all wind speeds:
 
-The power curve alone is misleading when comparing systems. Most of the time, the wind blows at
-low speeds, where the power is small but the boost stage makes the largest difference. To get the
-energy over a year, the power curve has to be weighted with the distribution of the wind speeds at
-the site:
+- **Current or power limit:** If the optimal power exceeds the rating of the converter, the
+  current has to be limited. The rotor then accelerates beyond its optimal speed until the rotor
+  power matches the limit, which also increases the generator voltage.
+- **Direct connection:** If the converter can't operate in some speed range, e.g. a boost
+  converter with a generator voltage above the battery voltage, the battery voltage determines
+  the operating point, as described in
+  [DC/DC converters](/theory/converters/#direct-battery-connection).
+- **No load:** If the battery is full or disconnected, the turbine has to be loaded by a dump
+  load or braked. Otherwise, the rotor accelerates to its runaway speed, typically 1.5 to 2 times
+  the optimal speed, and the generator voltage rises proportionally.
 
-$$
-E = 8760\ \text{h} \cdot \int_0^\infty P(v) \, f(v) \, dv
-$$
-
-The distribution $f(v)$ is usually described by a Weibull distribution with a shape factor $k$
-and a scale factor $c$:
-
-$$
-f(v) = \frac{k}{c} \left(\frac{v}{c}\right)^{k-1} e^{-(v/c)^k}
-\quad \text{with} \quad
-c = \frac{\bar{v}}{\Gamma(1 + 1/k)}
-$$
-
-For many sites, $k \approx 2$ is a good approximation (Rayleigh distribution). The distribution
-is then fully defined by the annual mean wind speed $\bar{v}$. Values of $k$ above 2 describe
-steadier winds, e.g. trade winds, values below 2 more variable winds.
-
-The mean wind speed is very site-specific. Small wind turbines are typically mounted at 10 to
-20 m height, where obstacles such as buildings and trees reduce the wind speed considerably
-compared to the values often quoted for large turbines at 100 m. As a rough guide:
-
-| Site                       | Mean wind speed at 10 to 20 m |
-| -------------------------- | ----------------------------- |
-| Sheltered inland           | 3 to 4 m/s                    |
-| Open inland terrain        | 4 to 5 m/s                    |
-| Coastal                    | 5 to 6 m/s                    |
-| Exposed coast or hilltop   | 6 to 8 m/s                    |
-
-For a specific location, the [Global Wind Atlas](https://globalwindatlas.info/) provides mean
-wind speeds and Weibull parameters, starting at 10 m height. Local obstacles are not included, so
-measuring at the site is the most reliable option.
-
-### Comparison with a system without boost stage
-
-The calculator compares the Spinvert Boost with the same board without boost stage, i.e. the
-active rectifier always connected directly to the battery. With the same generator, the
-comparison favors the Spinvert Boost, because a generator for a system without boost stage would
-be designed for a higher voltage. The calculator therefore also determines the best rewound
-version of the generator for this case: same magnets and copper volume, but a different number of
-turns, so that resistance and inductance scale with $k_e^2$.
-
-For the example turbine, the Spinvert Boost yields about 18 % more energy than the system with
-the optimized generator at a sheltered site with 3.5 m/s mean wind speed. At 6.5 m/s, the
-advantage drops to about 6 %. Compared to the same generator without boost stage, the gain is
-much larger at low wind speeds. The boost stage pays off most at sites with low mean wind speeds
-and when the generator can't be chosen freely.
-
-## Calculator
-
-The calculator below determines the optimal operating curve for a wind turbine and simulates the
-resulting operating points with the Spinvert Boost. For comparison, it also shows the same board
-without boost stage, where the active rectifier is always connected directly to the battery.
-
-If you don't know the parameters of your generator, measure them as described in
-[Generator basics](/theory/generators/#measuring-your-generator). The rotor parameters $C_{p,max}$
-and $\lambda_{opt}$ can often be found in the data sheet of the turbine or blades. If not, values
-of 0.35 and 6 are a reasonable starting point for 3-bladed rotors.
-
-<OperatingCurveCalculator client:visible />
-
-<Callout title="Assumptions">
-  The calculation assumes steady-state conditions and a generic shape of the $C_p(\lambda)$ curve,
-  scaled to the given $C_{p,max}$ and $\lambda_{opt}$. Friction and iron losses of the generator,
-  losses in cables and the voltage drop of the bypass are neglected. MOSFETs of the active
-  rectifier are assumed to have 5 mΩ on-resistance. Output at wind speeds above 20 m/s
-  is ignored in the energy yield.
-</Callout>
-
-## Other applications
-
-The concept of a lookup curve over speed is not limited to wind turbines. Only the source of the
-curve is different.
-
-**Micro hydro:** The power available from water is $P = \rho g Q H \eta$ with flow rate $Q$,
-head $H$ and turbine efficiency $\eta$. Impulse turbines such as Pelton wheels reach their
-maximum efficiency when the runner speed is about half the jet velocity
-$v_{jet} = \sqrt{2 g H}$. As the head is usually constant, the optimal speed is almost constant,
-too. The lookup curve becomes very steep around the optimal speed, so that the turbine is held
-at this speed independent of the flow rate.
-
-**Pedal power:** Here, the curve defines how pedaling feels. A power curve rising with the cube of the
-speed (like the one of a wind turbine) feels similar to riding a bicycle on a flat road, where
-the air drag dominates. Cyclists
-are most efficient at cadences between 60 and 90 rpm, so the gear ratio and the curve should be
-chosen such that the desired power is reached in this range.
+For the Spinvert Boost 4820, the [operating curve calculator](/hardware/boost-4820/operating-curve/)
+determines the lookup curve and shows how these limits affect the operating points.

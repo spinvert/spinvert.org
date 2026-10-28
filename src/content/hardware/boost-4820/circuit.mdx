@@ -5,7 +5,6 @@ order: 2
 ---
 
 import BoostExplorer from "~/lib/components/docs/BoostExplorer.svelte";
-import RectifierLosses from "~/lib/components/docs/RectifierLosses.svelte";
 
 The board consists of an active rectifier, a DC/DC boost converter with bypass, a dump load
 output and the measurement and control circuitry. The schematic and PCB are designed with KiCad,
@@ -13,58 +12,31 @@ and the design files are available in the [GitHub repository](https://github.com
 
 ## Active rectifier
 
-The rectifier is a 3-phase bridge with six MOSFETs, two per phase. Instead of letting diodes
-decide when current flows, the MOSFETs are switched on while the corresponding diode would
-conduct, so that the current flows through the low channel resistance instead of a diode.
-
-The losses of a diode bridge and an active rectifier at DC current $I$ are approximately
-
-$$
-P_{diode} = 2 \, V_F \, I
-\qquad
-P_{active} = 2 \, R_{DS(on)} \, I^2
-$$
-
-with the diode forward voltage $V_F$ and the on-resistance $R_{DS(on)}$ of the MOSFETs. Two
-devices are always in the current path. The diode losses grow linearly with the current, while
-the MOSFET losses grow with its square, so the advantage is largest at low and medium currents.
-
-For a given power, the current is inversely proportional to the voltage. At low rectified
-voltages, i.e. at low wind speeds, the current is relatively high and the diode losses take a
-large share of the power. Compare both options:
-
-<RectifierLosses client:visible />
+The rectifier is a 3-phase bridge with six MOSFETs, two per phase. The MOSFETs are switched on
+while the corresponding diode of a diode bridge would conduct, so that the current flows through
+the low channel resistance instead of a diode. The rectifier is rated for 20 A. See
+[Rectifiers](/theory/rectifiers/#active-rectifier) for the operating principle and a comparison
+of the losses with a diode bridge.
 
 {/* TODO: Add details about the MOSFETs, gate drivers and how the switching instants are determined. */}
 
 ## Boost converter
 
-The boost converter steps the rectified voltage up to the battery voltage. A MOSFET (low-side
-switch) connects the inductor to ground and builds up a current. When it turns off, the inductor
-current flows to the output through a second MOSFET (high-side switch, synchronous rectifier).
+The boost converter steps the rectified voltage up to the battery voltage. It uses a synchronous
+topology with two MOSFETs: the low-side switch builds up the inductor current, and the high-side
+switch replaces the diode of a basic boost converter. The operating principle and the equations
+are described in [DC/DC converters](/theory/converters/#boost-converter).
 
-In continuous conduction mode (CCM), the duty cycle $D$ of the low-side switch only depends on
-the voltages:
+| Parameter                | Value                    |
+| ------------------------ | ------------------------ |
+| Inductance $L$           | 47 µH                    |
+| Switching frequency      | 128 kHz                  |
+| Max. output current      | 10 A (480 W at 48 V)     |
 
-$$
-D = 1 - \frac{V_{in}}{V_{out}}
-$$
-
-During the on-time, the inductor current rises with a slope of $V_{in}/L$. The peak-to-peak
-ripple of the inductor current is
-
-$$
-\Delta I_L = \frac{V_{in} \cdot D}{L \cdot f_{sw}}
-$$
-
-With $L = 47\ \mu\text{H}$ and $f_{sw} = 128\ \text{kHz}$, the ripple reaches its maximum of
-about 2 A at $V_{in} = V_{out}/2$. If the average input current is lower than half the ripple,
-the inductor current drops to zero in every period, and the converter operates in discontinuous
-conduction mode (DCM). In DCM, the duty cycle depends on the load.
-
-The boost stage is rated for 10 A output current. With $V_{out} = 48$ V, this is about 480 W.
-At low input voltages, the input current $I_{in} = P / V_{in}$ becomes high, so the power is also
-limited by the current rating at the input.
+With these values, the inductor current ripple reaches its maximum of
+$\Delta I_{L,max} = V_{out} / (4 \, L \, f_{sw}) \approx 2\ \text{A}$ at $V_{in} = V_{out}/2$.
+At low input voltages, the input current $I_{in} = P / V_{in}$ becomes high, so the power is
+also limited by the current rating at the input.
 
 <BoostExplorer client:visible />
 
@@ -80,7 +52,7 @@ losses.
 
 In bypass mode, the battery voltage determines the rectified voltage. The current is then given
 by the generator voltage, the battery voltage and the internal resistance of the generator, as
-described in [Optimal operation](/theory/optimal-operation/#limits-of-the-board).
+described in [Operating curve](/hardware/boost-4820/operating-curve/#limits-of-the-board).
 
 ## Dump load
 

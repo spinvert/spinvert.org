@@ -1,0 +1,49 @@
+---
+title: Energy yield
+description: Estimating the annual energy of a small wind turbine from its power curve and the wind speed distribution at the site.
+order: 5
+---
+
+The power curve of a wind turbine system alone is misleading when comparing systems. Most of the
+time, the wind blows at low speeds, where the power is small but differences between systems
+(e.g. the cut-in speed) are large. To get the energy over a year, the power curve has to be
+weighted with the distribution of the wind speeds at the site:
+
+$$
+E = 8760\ \text{h} \cdot \int_0^\infty P(v) \, f(v) \, dv
+$$
+
+## Wind speed distribution
+
+The distribution $f(v)$ is usually described by a Weibull distribution with a shape factor $k$
+and a scale factor $c$:
+
+$$
+f(v) = \frac{k}{c} \left(\frac{v}{c}\right)^{k-1} e^{-(v/c)^k}
+\quad \text{with} \quad
+c = \frac{\bar{v}}{\Gamma(1 + 1/k)}
+$$
+
+For many sites, $k \approx 2$ is a good approximation (Rayleigh distribution). The distribution
+is then fully defined by the annual mean wind speed $\bar{v}$. Values of $k$ above 2 describe
+steadier winds, e.g. trade winds, values below 2 more variable winds.
+
+## Typical sites
+
+The mean wind speed is very site-specific. Small wind turbines are typically mounted at 10 to
+20 m height, where obstacles such as buildings and trees reduce the wind speed considerably
+compared to the values often quoted for large turbines at 100 m. As a rough guide:
+
+| Site                       | Mean wind speed at 10 to 20 m |
+| -------------------------- | ----------------------------- |
+| Sheltered inland           | 3 to 4 m/s                    |
+| Open inland terrain        | 4 to 5 m/s                    |
+| Coastal                    | 5 to 6 m/s                    |
+| Exposed coast or hilltop   | 6 to 8 m/s                    |
+
+For a specific location, the [Global Wind Atlas](https://globalwindatlas.info/) provides mean
+wind speeds and Weibull parameters, starting at 10 m height. Local obstacles are not included, so
+measuring at the site is the most reliable option.
+
+The [operating curve calculator](/hardware/boost-4820/operating-curve/#calculator) for the
+Spinvert Boost 4820 uses this method to estimate the annual energy for a given site.

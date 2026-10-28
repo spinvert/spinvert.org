@@ -1,0 +1,74 @@
+---
+title: Rectifiers
+description: Diode bridges, active rectification and controlled rectifiers for 3-phase permanent magnet generators, and their losses.
+order: 2
+---
+
+import RectifierLosses from "~/lib/components/docs/RectifierLosses.svelte";
+
+A battery needs DC, but a permanent magnet generator produces 3-phase AC with a voltage and
+frequency proportional to its speed. The first stage of the power electronics is therefore a
+rectifier. This page compares the common options.
+
+## Diode bridge
+
+The simplest rectifier is a 3-phase bridge with six diodes, two per phase. At any time, the
+diode connected to the most positive phase and the diode connected to the most negative phase
+conduct. The output is the highest line-to-line voltage, with a ripple of six pulses per period.
+Without load, its average value is $V_{dc,0} \approx 1.35 \, V_{LL}$ (see
+[Generators](/theory/generators/#voltage)).
+
+Diode bridges are cheap, robust and need no control. Their drawback is the forward voltage
+$V_F$ of the diodes. Two diodes are always in the current path, so the losses at DC current $I$
+are
+
+$$
+P_{diode} = 2 \, V_F \, I
+$$
+
+With silicon diodes, $V_F$ is about 0.7 to 1 V, with Schottky diodes about 0.4 to 0.6 V at
+high currents. A drop of 1 to 2 V is negligible for a high-voltage system, but not for small
+generators: at 12 V, it corresponds to a loss of 10 % or more. The losses also have to be
+dissipated as heat. At 20 A, a diode bridge dissipates around 30 W.
+
+## Active rectifier
+
+An active rectifier (also called synchronous rectifier) uses MOSFETs instead of diodes. Each
+MOSFET is switched on during the interval in which the corresponding diode would conduct, so
+the current flows through the channel resistance $R_{DS(on)}$ instead of a diode junction. The
+body diodes of the MOSFETs take over during the short transitions.
+
+The losses are approximately
+
+$$
+P_{active} = 2 \, R_{DS(on)} \, I^2
+$$
+
+With modern low-voltage MOSFETs, $R_{DS(on)}$ is only a few milliohms. The diode losses grow
+linearly with the current, the MOSFET losses with its square, so the advantage is largest at low
+and medium currents. For a given power, the current is inversely proportional to the voltage. At
+low voltages, i.e. at low speeds, the current is relatively high and diode losses take a large
+share of the power.
+
+<RectifierLosses client:visible />
+
+The price for the lower losses is a more complex circuit: the MOSFETs need gate drivers, and the
+switching instants have to be derived from the phase voltages. Switching at the wrong time would
+short-circuit two phases.
+
+## Controlled rectifier
+
+A 3-phase MOSFET bridge has the same structure as the inverter of a motor drive. Instead of only
+mimicking diodes, it can be operated with pulse width modulation (PWM) to control the phase
+currents directly. This enables some additional features:
+
+- The phase currents can be sinusoidal and in phase with the induced voltage. This avoids the
+  commutation voltage drop of a diode bridge and reduces torque ripple and acoustic noise.
+- Together with the generator inductance, the bridge can work as a boost converter and raise the
+  DC voltage above the rectified generator voltage, without an additional inductor.
+- The generator can be operated as a motor, e.g. to start a vertical axis wind turbine.
+
+On the other hand, the control needs the rotor position (from sensors or estimated from the
+voltages and currents), and the switching losses and the effort for the control are considerably
+higher. For small generators, a simple active rectifier followed by a separate DC/DC converter is
+often the better compromise.

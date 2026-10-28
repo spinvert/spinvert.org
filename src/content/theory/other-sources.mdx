@@ -1,0 +1,25 @@
+---
+title: Other sources
+description: Using lookup curves for micro hydro turbines and pedal generators.
+order: 6
+---
+
+The concept of a lookup curve over speed described in
+[Optimal operation](/theory/optimal-operation/#tracking-methods) is not limited to wind turbines.
+Only the source of the curve is different.
+
+## Micro hydro
+
+The power available from water is $P = \rho g Q H \eta$ with flow rate $Q$, head $H$ and
+turbine efficiency $\eta$. Impulse turbines such as Pelton wheels reach their maximum efficiency
+when the runner speed is about half the jet velocity $v_{jet} = \sqrt{2 g H}$. As the head is
+usually constant, the optimal speed is almost constant, too. The lookup curve becomes very steep
+around the optimal speed, so that the turbine is held at this speed independent of the flow
+rate.
+
+## Pedal power
+
+Here, the curve defines how pedaling feels. A power curve rising with the cube of the speed (like
+the one of a wind turbine) feels similar to riding a bicycle on a flat road, where the air drag
+dominates. Cyclists are most efficient at cadences between 60 and 90 rpm, so the gear ratio and
+the curve should be chosen such that the desired power is reached in this range.

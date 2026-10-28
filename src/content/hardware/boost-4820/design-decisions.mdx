@@ -1,32 +1,20 @@
 ---
 title: Design decisions
-description: Why the Spinvert Boost uses active rectification, a boost converter with bypass, a dump load and a lookup curve for control.
+description: Why the Spinvert Boost 4820 uses active rectification, a boost converter with bypass, a dump load and a lookup curve for control.
 order: 1
 ---
 
-This page explains the main design decisions behind the Spinvert Boost and the trade-offs that
-were made.
+This page explains the main design decisions behind the Spinvert Boost 4820 and the trade-offs
+that were made. The general background can be found in the [Theory](/theory/) section.
 
-## Boost converter instead of buck converter
+## Boost converter with 48 V output
 
-A permanent magnet generator produces a voltage proportional to its speed. Without a converter,
-a battery can only be charged when the rectified generator voltage exceeds the battery voltage.
-At low wind speeds, the turbine spins too slowly to reach this voltage. It produces nothing, even
-though power is available in the wind.
-
-A DC/DC converter decouples the generator voltage from the battery voltage. There are two
-options:
-
-- A **buck converter** (step-down) requires a generator voltage _above_ the battery voltage at
-  all relevant speeds. The generator has to be designed for low speeds, so its voltage becomes
-  very high at high speeds. Without load (e.g. if the battery is disconnected), the open-circuit
-  voltage can reach several hundred volts.
-- A **boost converter** (step-up) works with a generator voltage _below_ the battery voltage.
-  The generator is designed so that it reaches the battery voltage only at high wind speeds.
-
-The Spinvert Boost uses the boost approach. All voltages stay in the extra-low voltage range
-below 60 V DC, which makes the system safer to install and allows cheaper semiconductors with low
-on-resistance.
+The Spinvert Boost uses a boost converter instead of a buck converter (see
+[DC/DC converters](/theory/converters/) for a comparison). The generator voltage stays below the
+battery voltage over most of the speed range, and power can be harvested even at low wind speeds,
+where a directly connected generator would produce nothing. All voltages stay in the extra-low
+voltage range below 60 V DC, which makes the system safer to install and allows cheaper
+semiconductors with low on-resistance.
 
 A 48 V battery or DC bus keeps the currents lower than with 12 V or 24 V systems and is the
 standard for off-grid inverters in the power range of small wind turbines.
@@ -48,25 +36,25 @@ chosen for several reasons:
   no switching losses and no inductor losses.
 - **Wind statistics:** The power in the wind grows with the cube of the wind speed. At typical
   sites, most of the operating hours are at low wind speeds where the boost converter matters
-  most, while full power is reached only rarely. It makes sense to size the converter for the
-  frequent conditions.
+  most, while full power is reached only rarely (see [Energy yield](/theory/energy-yield/)). It
+  makes sense to size the converter for the frequent conditions.
 
 The trade-off: in bypass mode, the battery voltage determines the operating point of the
 turbine, and the board cannot control the speed anymore. The generator should be selected such
 that the operating point in bypass mode stays close to the optimum. The
-[calculator](/theory/optimal-operation/#calculator) shows how well a given generator matches.
+[calculator](/hardware/boost-4820/operating-curve/#calculator) shows how well a given generator
+matches.
 
 ## Active rectification
 
-In a diode bridge, two diodes are always in the current path. Each causes a voltage drop of
-about 0.5 to 1 V, so 1 to 2 V of the generator voltage are lost. At 48 V this is a loss of 2 to
-4 %. However, the boost converter allows harvesting power at much lower voltages, e.g. 12 V,
-where the same diode drop causes a loss of 10 % or more.
+The boost converter allows harvesting power at low rectified voltages, e.g. 12 V. At these
+voltages, the drop of two diodes in a diode bridge would cause a loss of 10 % or more. The
+Spinvert Boost therefore uses an active rectifier with MOSFETs, which has much lower losses and
+produces less heat (see [Rectifiers](/theory/rectifiers/)).
 
-An active rectifier replaces the diodes by MOSFETs. Their losses depend on the on-resistance and
-are much lower at low and medium currents. They also produce less heat: at 20 A, a diode bridge
-dissipates around 30 W, while MOSFETs with 5 mΩ on-resistance dissipate only a few watts. See
-[Hardware: Active rectifier](/hardware/boost-4820/circuit/#active-rectifier) for an interactive comparison.
+A controlled rectifier with PWM would offer additional features, but the control effort is
+considerably higher. The combination of a simple active rectifier with a separate boost stage
+keeps the control simple.
 
 ## Dump load behind the rectifier
 
@@ -82,24 +70,15 @@ to the rectified DC voltage, a simple resistive load such as a water or air heat
 
 ## Lookup curve instead of perturb and observe
 
-Solar charge controllers usually find the maximum power point by _perturb and observe_: they
-change the operating point a little and check whether the power increased. This doesn't work well
-for wind turbines:
-
-- The rotor has a large inertia. After a change of the generator current, the measured power is
-  dominated by the rotor accelerating or slowing down, not by the aerodynamic power.
-- The wind speed changes continuously, so the controller can't tell whether a power change was
-  caused by its own action or by a gust.
-
-Instead, the Spinvert Boost uses the known characteristics of the turbine. At the optimum, the
-power of a wind rotor is proportional to the cube of its speed. The board measures the speed and
-sets the generator current according to a lookup curve. This is fast, robust and doesn't need a
-wind speed sensor. The derivation and a calculator for the curve can be found in
-[Optimal operation](/theory/optimal-operation/).
+Perturb and observe, the usual method of solar charge controllers, doesn't work well with the
+inertia of a wind rotor and gusty wind (see
+[Optimal operation](/theory/optimal-operation/#tracking-methods)). The Spinvert Boost instead
+measures the generator speed and sets the current according to a lookup curve, which is
+calculated from the known characteristics of turbine and generator. This is fast, robust and
+doesn't need a wind speed sensor.
 
 The speed is derived from the frequency of the generator voltage, which requires knowing the
-number of poles of the generator. In contrast to the voltage, the frequency is not affected by
-voltage drops in the generator windings and is therefore an exact measure of the speed.
+number of poles of the generator.
 
 ## Based on Libre Solar
 
