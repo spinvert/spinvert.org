@@ -6,29 +6,15 @@
   import NumberField from "./NumberField.svelte";
   import Stat from "./Stat.svelte";
 
-  interface Props {
-    /**
-     * Generic mode: inductance and switching frequency can be changed, and the ratings of the
-     * Spinvert Boost are not checked. Otherwise, the values of the board are used.
-     */
-    generic?: boolean;
-  }
-
-  let { generic = false }: Props = $props();
-
-  // Inductance in µH, switching frequency in kHz
-  let inductance = $state(board.boostInductance * 1e6);
-  let frequency = $state(board.switchingFrequency / 1e3);
-  const conv = $derived({ inductance: inductance * 1e-6, frequency: frequency * 1e3 });
+  const conv = { inductance: board.boostInductance, frequency: board.switchingFrequency };
 
   let inputVoltage = $state(24);
   let outputVoltage = $state(board.outputVoltage);
   let power = $state(200);
 
   const valid = $derived(
-    [inputVoltage, outputVoltage, power, inductance, frequency].every(
-      (v) => typeof v === "number" && v > 0,
-    ) && inputVoltage < outputVoltage,
+    [inputVoltage, outputVoltage, power].every((v) => typeof v === "number" && v > 0) &&
+      inputVoltage < outputVoltage,
   );
 
   const op = $derived(valid ? boostOperatingPoint(conv, inputVoltage, outputVoltage, power) : undefined);
@@ -59,19 +45,6 @@
 </script>
 
 <div class="not-prose my-8 rounded-lg border p-4 sm:p-6">
-  {#if generic}
-    <div class="mb-6 grid gap-6 sm:grid-cols-3">
-      <NumberField label="Inductance" bind:value={inductance} unit="µH" min={1} max={1000} step={1} />
-      <NumberField
-        label="Switching frequency"
-        bind:value={frequency}
-        unit="kHz"
-        min={10}
-        max={1000}
-        step={1}
-      />
-    </div>
-  {/if}
   <div class="grid gap-6 sm:grid-cols-3">
     <NumberField label="Input voltage" bind:value={inputVoltage} unit="V" min={1} max={57} step={0.5} slider />
     <NumberField label="Output voltage" bind:value={outputVoltage} unit="V" min={40} max={58} step={0.5} slider />
@@ -80,9 +53,8 @@
 
   {#if !op}
     <p class="mt-6 rounded-md border border-destructive/50 px-3 py-2 text-sm text-destructive">
-      A boost converter needs an input voltage below the output voltage{generic
-        ? "."
-        : ". Above, the board uses the bypass."}
+      A boost converter needs an input voltage below the output voltage. Above, the board uses the
+      bypass.
     </p>
   {:else}
     <div class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -92,7 +64,7 @@
       <Stat label="Peak current" value={fmt(op.peakCurrent)} unit="A" />
     </div>
 
-    {#if !generic && (op.outputCurrent > board.boostMaxOutputCurrent || op.inputCurrent > board.rectifierMaxCurrent)}
+    {#if op.outputCurrent > board.boostMaxOutputCurrent || op.inputCurrent > board.rectifierMaxCurrent}
       <p class="mt-4 rounded-md border px-3 py-2 text-sm">
         <strong>Above rating:</strong> The output current of {fmt(op.outputCurrent)} A or the input
         current of {fmt(op.inputCurrent)} A exceeds the limits of {board.boostMaxOutputCurrent} A
