@@ -114,9 +114,10 @@
     {/if}
 
     <p class="mt-4 text-sm">
-      The rectified open-circuit voltage reaches {board.outputVoltage} V at
-      <strong>{fmt(rpmAt(board.outputVoltage))} rpm</strong> and the input voltage rating of
-      {board.maxInputVoltage} V at <strong>{fmt(rpmAt(board.maxInputVoltage))} rpm</strong>.
+      The rectified open-circuit voltage reaches {board.outputVoltage} V (battery voltage) at
+      <strong>{fmt(rpmAt(board.outputVoltage))} rpm</strong> and {board.maxInputVoltage} V (input
+      voltage rating of the Spinvert Boost) at
+      <strong>{fmt(rpmAt(board.maxInputVoltage))} rpm</strong>.
     </p>
 
     <a
