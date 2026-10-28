@@ -52,10 +52,6 @@ voltages, the drop of two diodes in a diode bridge would cause a loss of 10 % or
 Spinvert Boost therefore uses an active rectifier with MOSFETs, which has much lower losses and
 produces less heat (see [Rectifiers](/theory/rectifiers/)).
 
-A controlled rectifier with PWM would offer additional features, but the control effort is
-considerably higher. The combination of a simple active rectifier with a separate boost stage
-keeps the control simple.
-
 ## Dump load behind the rectifier
 
 A wind turbine must never be left without load. Without load, the rotor accelerates to its
@@ -67,6 +63,15 @@ The dump load is connected directly behind the rectifier, in parallel to the boo
 and the bypass. This way, it can load the generator independent of the converter stage and of
 the battery: if the battery is full or disconnected, the dump load takes over. As it is connected
 to the rectified DC voltage, a simple resistive load such as a water or air heater can be used.
+
+The dump load can be driven with PWM. This way, exactly the power that can't be used otherwise
+is diverted, and the turbine can stay at its optimal operating point even when the battery is
+full. See [Dump load](/theory/dump-load/) for a comparison of the connection and control options.
+
+The dump load is not sufficient to protect the turbine at high wind speeds. Its power is limited
+by the ratings of the board, and it fails if the board fails. The turbine therefore needs a
+secondary protection that works independently of the Spinvert Boost, e.g. furling or a separate
+automatic electrical brake.
 
 ## Lookup curve instead of perturb and observe
 

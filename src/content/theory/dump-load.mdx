@@ -1,0 +1,67 @@
+---
+title: Dump load
+description: Why a wind turbine needs a dump load, where it can be connected, how it is controlled and sized.
+order: 5
+---
+
+A solar charge controller can simply stop charging when the battery is full: the panels then
+just sit at their open-circuit voltage. A wind turbine can't be treated this way. Without load,
+the rotor accelerates to its runaway speed, typically 1.5 to 2 times the optimal speed. The
+mechanical stress increases, and the generator voltage rises proportionally to the speed.
+
+A dump load (also called diversion load) takes over the power whenever it can't be used
+otherwise, e.g. when the battery is full or disconnected. It is usually a resistive heating
+element, so the excess energy can still be used to heat water or air.
+
+## Connection options
+
+**Battery side:** In classic small wind systems with a direct battery connection, a diversion
+controller connects the dump load to the battery when the battery voltage gets too high. This is
+simple, but it only works as long as the battery is connected. If a fuse blows or a cable comes
+loose, the turbine runs without load.
+
+**Rectifier side:** The dump load is connected directly to the rectified generator voltage,
+before any converter. It can load the generator independent of the battery and of the converter,
+and it can also be used to limit the generator voltage. This requires a switch rated for the
+full generator current.
+
+**AC side:** Three resistors are connected to the generator phases. This avoids the rectifier, but
+needs three switches and is rarely used for small turbines.
+
+## Control
+
+The simplest control switches the dump load on when a voltage threshold is exceeded and off again
+below a lower threshold (hysteresis). This causes the generator load, and thus the rotor speed,
+to jump between two states.
+
+With pulse width modulation (PWM), the dump load is switched on and off quickly, and the duty
+cycle sets the average power. This allows the controller to divert exactly the power that is not
+needed, so the turbine can stay at its optimal operating point even when the battery is full.
+
+## Sizing
+
+The resistance $R$ of the dump load determines the current and power at a given voltage $V$:
+
+$$
+I = \frac{V}{R}
+\qquad
+P = \frac{V^2}{R}
+$$
+
+Two conditions have to be met:
+
+- The resistance has to be low enough to absorb the maximum power of the turbine at the voltage
+  where the dump load operates.
+- It has to be high enough that the current stays within the rating of the switch, even at the
+  highest voltage.
+
+The dump load must be rated for continuous operation at full power, as it may run for hours
+during a windy period with a full battery.
+
+## Dump load is not a brake
+
+A dump load keeps the turbine loaded in normal operation, but it can't protect the turbine in a
+storm. Above its rated wind speed, a turbine has to limit its power by mechanical means, e.g. by
+furling (turning the rotor out of the wind). For maintenance or emergencies, a stop switch that
+shorts the generator phases can brake the turbine, but this should only be used at low wind
+speeds, as braking at high speeds causes very high currents and mechanical loads.
