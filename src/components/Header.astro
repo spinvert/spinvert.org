@@ -1,29 +1,146 @@
 ---
-import { Zap } from "@lucide/svelte";
-import { Button } from "$lib/components/ui/button";
+import { ChevronDown, Zap } from "@lucide/svelte";
+import { Button, buttonVariants } from "$lib/components/ui/button";
 import { navLinks, site } from "$lib/site";
 import GitHubIcon from "./GitHubIcon.astro";
 import ThemeToggle from "./ThemeToggle.astro";
+
+const summaryClass = "list-none [&::-webkit-details-marker]:hidden";
+const dropdownClass =
+  "absolute mt-1 min-w-40 rounded-lg bg-popover p-1 text-sm text-popover-foreground shadow-md ring-1 ring-foreground/10";
+const dropdownItemClass = "block rounded-md px-2 py-1.5 hover:bg-muted";
+const mobileItemClass = "block rounded-md px-3 py-2 hover:bg-muted";
 ---
 
 <header class="sticky top-0 z-50 border-b bg-background/80 backdrop-blur">
-  <nav class="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
+  <nav class="relative z-10 mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
     <a href="/" class="flex items-center gap-2 font-semibold tracking-tight">
       <Zap class="size-5 fill-primary text-primary" aria-hidden="true" />
       {site.name}
     </a>
-    <div class="flex items-center gap-1 sm:gap-2">
-      {
-        navLinks.map((link) => (
-          <Button href={link.href} variant="ghost" size="sm" class="hidden sm:inline-flex">
-            {link.label}
-          </Button>
-        ))
-      }
+    <div class="flex items-center gap-1">
+      <div class="hidden items-center gap-1 md:flex">
+        {navLinks.map((item) =>
+          item.children ? (
+            <details class="relative" data-dropdown>
+              <summary
+                class={buttonVariants({ variant: "ghost", size: "sm", class: summaryClass })}
+              >
+                {item.label}
+                <ChevronDown aria-hidden="true" />
+              </summary>
+              <ul class:list={[dropdownClass, "left-0"]}>
+                {item.children.map((child) => (
+                  <li>
+                    <a href={child.href} class={dropdownItemClass}>
+                      {child.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ) : (
+            <Button href={item.href} variant="ghost" size="sm">
+              {item.label}
+            </Button>
+          ),
+        )}
+      </div>
       <ThemeToggle />
       <Button href={site.repoUrl} variant="ghost" size="icon" aria-label="Spinvert on GitHub">
         <GitHubIcon class="size-5" />
       </Button>
+      <button
+        id="mobile-menu-toggle"
+        type="button"
+        class={buttonVariants({ variant: "ghost", size: "icon", class: "group md:hidden" })}
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+      >
+        <span class="relative block size-4" aria-hidden="true">
+          <span class="absolute top-1/2 left-0 mt-[-0.75px] h-[1.5px] w-4 -translate-y-1 rounded-full bg-current transition-transform duration-200 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-45"></span>
+          <span class="absolute top-1/2 left-0 mt-[-0.75px] h-[1.5px] w-4 translate-y-1 rounded-full bg-current transition-transform duration-200 group-aria-expanded:translate-y-0 group-aria-expanded:-rotate-45"></span>
+        </span>
+      </button>
     </div>
   </nav>
+  <div
+    id="mobile-menu"
+    class="absolute inset-x-0 top-full h-[calc(100dvh-3.5rem)] overflow-y-auto border-t bg-background animate-in fade-in slide-in-from-top-2 md:hidden"
+    hidden
+  >
+    <ul class="flex flex-col gap-1 px-4 py-6 text-lg font-medium sm:px-6">
+      {navLinks.map((item) => (
+        <li>
+          {item.children ? (
+            <details class="group" open>
+              <summary
+                class:list={[
+                  mobileItemClass,
+                  summaryClass,
+                  "flex cursor-pointer items-center justify-between",
+                ]}
+              >
+                {item.label}
+                <ChevronDown
+                  class="size-5 text-muted-foreground transition-transform group-open:rotate-180"
+                  aria-hidden="true"
+                />
+              </summary>
+              <ul class="mb-2 ml-3 flex flex-col gap-0.5 border-l pl-3 text-base font-normal">
+                {item.children.map((child) => (
+                  <li>
+                    <a
+                      href={child.href}
+                      class="block rounded-md px-3 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                    >
+                      {child.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ) : (
+            <a href={item.href} class={mobileItemClass}>
+              {item.label}
+            </a>
+          )}
+        </li>
+      ))}
+    </ul>
+  </div>
 </header>
+
+<script>
+  // Close open dropdowns when clicking outside of them
+  document.addEventListener("click", (event) => {
+    document.querySelectorAll<HTMLDetailsElement>("details[data-dropdown][open]").forEach((el) => {
+      if (!el.contains(event.target as Node)) el.open = false;
+    });
+  });
+
+  // Full-width mobile menu, toggled by the burger button
+  const menuToggle = document.getElementById("mobile-menu-toggle");
+  const mobileMenu = document.getElementById("mobile-menu");
+
+  function setMenuOpen(open: boolean) {
+    if (!menuToggle || !mobileMenu) return;
+    menuToggle.setAttribute("aria-expanded", String(open));
+    mobileMenu.hidden = !open;
+    document.documentElement.classList.toggle("overflow-hidden", open);
+  }
+
+  menuToggle?.addEventListener("click", () =>
+    setMenuOpen(menuToggle.getAttribute("aria-expanded") !== "true"),
+  );
+  mobileMenu?.addEventListener("click", (event) => {
+    if ((event.target as Element).closest("a")) setMenuOpen(false);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setMenuOpen(false);
+  });
+  matchMedia("(min-width: 48rem)").addEventListener("change", (event) => {
+    if (event.matches) setMenuOpen(false);
+  });
+</script>

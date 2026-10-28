@@ -5,7 +5,10 @@ export const site = {
   repoUrl: "https://github.com/spinvert/",
 };
 
-export const navLinks = [
+/** Navigation item with either a link or nested items (shown as dropdown) */
+export type NavItem = { label: string; href?: string; children?: NavItem[] };
+
+export const navLinks: NavItem[] = [
   { label: "Overview", href: "/#top" },
   { label: "Hardware", href: "/hardware/boost-4820/" },
   { label: "Theory", href: "/theory/" },
