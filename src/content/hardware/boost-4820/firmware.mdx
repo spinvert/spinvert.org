@@ -1,7 +1,7 @@
 ---
 title: Firmware
 description: Control concept and operating modes of the Spinvert Boost firmware.
-order: 5
+order: 3
 ---
 
 import Callout from "~/components/Callout.astro";
@@ -20,7 +20,7 @@ ThingSet protocol.
 ## Control concept
 
 The firmware controls the generator current according to a lookup curve, as derived in
-[Optimal operation](/docs/optimal-operation/). In every control cycle, it performs the following
+[Optimal operation](/theory/optimal-operation/). In every control cycle, it performs the following
 steps:
 
 1. **Measure the frequency** of the AC generator voltage.
@@ -68,6 +68,6 @@ via the ThingSet protocol over USB or CAN-FD. The same interfaces provide live d
 generator frequency, voltages, currents and operating mode.
 
 The lookup curve can be calculated with the
-[calculator](/docs/optimal-operation/#calculator), which exports the curve as CSV or JSON.
+[calculator](/theory/optimal-operation/#calculator), which exports the curve as CSV or JSON.
 
 {/* TODO: Document the ThingSet data objects for the curve and the generator parameters. */}

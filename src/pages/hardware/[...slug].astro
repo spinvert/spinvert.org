@@ -1,0 +1,32 @@
+---
+import type { GetStaticPaths } from "astro";
+import { getCollection, render } from "astro:content";
+import { docPages } from "$lib/docs";
+import DocsLayout from "~/layouts/DocsLayout.astro";
+
+export const getStaticPaths = (async () => {
+  const entries = await getCollection("hardware");
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}) satisfies GetStaticPaths;
+
+const { entry } = Astro.props;
+const { Content, headings } = await render(entry);
+
+// Each product has its own folder, e.g. boost-4820/, with index page "boost-4820"
+const product = entry.id.split("/")[0];
+const pages = await docPages(
+  "hardware",
+  (other) => other.id === product || other.id.startsWith(`${product}/`),
+);
+const productIndex = (await getCollection("hardware")).find((other) => other.id === product);
+---
+
+<DocsLayout
+  title={entry.data.title}
+  description={entry.data.description}
+  headings={headings}
+  section={productIndex?.data.section ?? "Hardware"}
+  pages={pages}
+>
+  <Content />
+</DocsLayout>

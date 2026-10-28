@@ -1,7 +1,7 @@
 ---
 title: Optimal operation
 description: Derivation of the optimal operating curve of a wind turbine and a calculator for the lookup curve used by the Spinvert Boost firmware.
-order: 3
+order: 4
 ---
 
 import Callout from "~/components/Callout.astro";
@@ -72,7 +72,7 @@ the rotor speed, which is derived from the generator frequency.
 ## From power to generator current
 
 The firmware controls the input current of the boost converter, so the optimal power curve has
-to be translated into a current. Using the [generator model](/docs/generator/#generator-under-load),
+to be translated into a current. Using the [generator model](/theory/generators/#generator-under-load),
 the shaft power at DC current $I$ is
 
 $$
@@ -187,7 +187,7 @@ resulting operating points with the Spinvert Boost. For comparison, it also show
 without boost stage, where the active rectifier is always connected directly to the battery.
 
 If you don't know the parameters of your generator, measure them as described in
-[Generator basics](/docs/generator/#measuring-your-generator). The rotor parameters $C_{p,max}$
+[Generator basics](/theory/generators/#measuring-your-generator). The rotor parameters $C_{p,max}$
 and $\lambda_{opt}$ can often be found in the data sheet of the turbine or blades. If not, values
 of 0.35 and 6 are a reasonable starting point for 3-bladed rotors.
 

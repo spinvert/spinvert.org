@@ -54,7 +54,7 @@ chosen for several reasons:
 The trade-off: in bypass mode, the battery voltage determines the operating point of the
 turbine, and the board cannot control the speed anymore. The generator should be selected such
 that the operating point in bypass mode stays close to the optimum. The
-[calculator](/docs/optimal-operation/#calculator) shows how well a given generator matches.
+[calculator](/theory/optimal-operation/#calculator) shows how well a given generator matches.
 
 ## Active rectification
 
@@ -66,7 +66,7 @@ where the same diode drop causes a loss of 10 % or more.
 An active rectifier replaces the diodes by MOSFETs. Their losses depend on the on-resistance and
 are much lower at low and medium currents. They also produce less heat: at 20 A, a diode bridge
 dissipates around 30 W, while MOSFETs with 5 mΩ on-resistance dissipate only a few watts. See
-[Hardware: Active rectifier](/docs/hardware/#active-rectifier) for an interactive comparison.
+[Hardware: Active rectifier](/hardware/boost-4820/circuit/#active-rectifier) for an interactive comparison.
 
 ## Dump load behind the rectifier
 
@@ -95,7 +95,7 @@ Instead, the Spinvert Boost uses the known characteristics of the turbine. At th
 power of a wind rotor is proportional to the cube of its speed. The board measures the speed and
 sets the generator current according to a lookup curve. This is fast, robust and doesn't need a
 wind speed sensor. The derivation and a calculator for the curve can be found in
-[Optimal operation](/docs/optimal-operation/).
+[Optimal operation](/theory/optimal-operation/).
 
 The speed is derived from the frequency of the generator voltage, which requires knowing the
 number of poles of the generator. In contrast to the voltage, the frequency is not affected by

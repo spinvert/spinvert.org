@@ -2,6 +2,7 @@
 title: Overview
 description: Introduction to the Spinvert Boost 4820, an active rectifier and boost converter for small wind turbines, micro hydro and pedal generators.
 order: 0
+section: Spinvert Boost 4820
 ---
 
 import Callout from "~/components/Callout.astro";
@@ -61,15 +62,16 @@ Select an operating mode to see how the power flows through the board:
 
 ## Contents of this documentation
 
-- [Design decisions](/docs/design-decisions/) explains why the board is built the way it is.
-- [Generator basics](/docs/generator/) describes the generator model and how to measure the
-  parameters of your own generator.
-- [Optimal operation](/docs/optimal-operation/) derives the optimal operating curve of a wind
-  turbine and contains a calculator for the lookup curve used by the firmware.
-- [Hardware](/docs/hardware/) covers the active rectifier, the boost stage, bypass, dump load and
-  measurements.
-- [Firmware](/docs/firmware/) describes the control concept and operating modes.
-- [Installation and safety](/docs/installation/) gives guidance for setting up a system.
+- [Design decisions](/hardware/boost-4820/design-decisions/) explains why the board is built the
+  way it is.
+- [Circuit description](/hardware/boost-4820/circuit/) covers the active rectifier, the boost
+  stage, bypass, dump load and measurements.
+- [Firmware](/hardware/boost-4820/firmware/) describes the control concept and operating modes.
+- [Installation and safety](/hardware/boost-4820/installation/) gives guidance for setting up a
+  system.
+
+The [Theory](/theory/) section explains the background independent of this board: how permanent
+magnet generators work, how to measure them, and how a wind turbine is operated optimally.
 
 ## Source files and license
 
