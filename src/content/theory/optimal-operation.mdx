@@ -119,15 +119,14 @@ the frequency is an exact measure of the speed.
 In practice, the optimal curve can't be followed at all wind speeds:
 
 - **Current or power limit:** If the optimal power exceeds the rating of the converter, the
-  current has to be limited. The rotor then accelerates beyond its optimal speed until the rotor
-  power matches the limit, which also increases the generator voltage.
+  current has to be limited. The rotor then accelerates beyond its optimal speed.
 - **Direct connection:** If the converter can't operate in some speed range, e.g. a boost
   converter with a generator voltage above the battery voltage, the battery voltage determines
   the operating point, as described in
   [DC/DC converters](/theory/converters/#direct-battery-connection).
-- **No load:** If the battery is full or disconnected, the turbine has to be loaded by a dump
-  load or braked. Otherwise, the rotor accelerates to its runaway speed, typically 1.5 to 2 times
-  the optimal speed, and the generator voltage rises proportionally.
+- **No load:** If the battery is full or disconnected, the turbine has to be loaded by a
+  [dump load](/theory/dump-load/) or braked. Otherwise, the rotor accelerates to its runaway speed,
+  typically 1.5 to 2 times the optimal speed, and the generator voltage rises proportionally.
 
 For the Spinvert Boost 4820, the [operating curve calculator](/hardware/boost-4820/operating-curve/)
 determines the lookup curve and shows how these limits affect the operating points.

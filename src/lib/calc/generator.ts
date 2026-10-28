@@ -1,6 +1,6 @@
 /**
- * Model of a 3-phase permanent magnet synchronous generator (PMSG) connected to a 6-pulse
- * (bridge) rectifier.
+ * Model of a 3-phase permanent magnet synchronous generator (PMSG) connected to a 3-phase bridge
+ * rectifier (six-pulse rectifier).
  *
  * All phase quantities refer to the star (Y) equivalent circuit. A delta-connected generator
  * can be described by its star equivalent with the same line-to-line values.

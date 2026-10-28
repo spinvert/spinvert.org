@@ -19,31 +19,16 @@ The magnets on the rotor alternate between north and south poles. The number of 
 always even, and $p/2$ is the number of pole pairs.
 
 The stator has three phase windings, typically connected in star (Y). Each phase winding usually
-consists of several coils distributed around the stator. The coils of one phase are placed such
-that they pass the magnets at the same relative position at the same time, so their voltages are
-in phase and add up. Depending on the design, the coils of a phase are connected in series (higher
-voltage) or in parallel (higher current).
+consists of several coils distributed around the stator. Depending on the design, the coils of a
+phase are connected in series (higher voltage) or in parallel (higher current).
 
-The numbers of coils and poles have to be different. With one coil per pole, all coils would pass
-the magnets at the same relative position at the same time, so all voltages would be in phase
-and the generator would only provide a single phase. For three phases, the coils have to be
-shifted against each other by 120° (electrical). With $Q$ coils evenly distributed around the
-stator, the electrical angle between neighboring coils is
-
-$$
-\Delta\theta_e = \frac{p}{2} \cdot \frac{360°}{Q}
-$$
-
-A popular choice is 3 coils for every 4 poles, used in the axial flux generator designs by
-[Hugh Piggott](https://scoraigwind.co.uk/?p=953), which are widely built for small wind turbines.
-With 12 poles and 9 coils, $\Delta\theta_e = 6 \cdot 40° = 240°$, so the coils follow the sequence
-0°, 240°, 120°, 0°, … Every third coil belongs to the same phase, resulting in 3 coils per phase
-with exactly balanced phases. Other combinations are possible as well, e.g. 9 coils with 6 poles.
+The numbers of coils and poles have to be different. The most common ratio for a balanced torque is
+3:4, meaning 3 coils for every 4 poles.
 
 <Callout title="Counting poles of axial flux generators">
-  Axial flux generators often have two rotor discs with the stator in between. Opposite magnets
-  on both discs face each other with opposite polarity, so that the magnetic flux passes through
-  the coils. Each such pair of magnets forms one pole, so only the magnets on one disc are counted.
+  Axial flux generators often have two rotor discs with the stator in between. Opposite magnets on
+  both discs face each other with opposite polarity, so that the magnetic flux passes through the
+  coils. Each such pair of magnets forms one pole, so only the magnets on one disc are counted.
 </Callout>
 
 ## Frequency
@@ -62,15 +47,10 @@ $$
 f_e = \frac{16 \cdot 600\ \text{min}^{-1}}{2 \cdot 60\ \text{s/min}} = 80\ \text{Hz}
 $$
 
-The number of coils doesn't appear in the equation. The coils of a phase all produce the same
-frequency, and their number and connection only affect the voltage, resistance and inductance of
-the phase. A generator with 12 poles and 9 coils at 300 rpm produces 30 Hz, the same as any other
-12-pole generator.
+The frequency is independent of the number of coils.
 
-Power electronics that derive the speed from the frequency need the correct pole count: with a
-wrong value, all calculated speeds are off by the same factor. If the pole count is unknown, it
-can be determined from a measurement of frequency and speed as $p = 2 f_e / n$ (see
-[Measuring your generator](#measuring-your-generator)).
+Using the pole count, power electronics can calculate the rotational speed from the measured
+frequency.
 
 ## Voltage
 
@@ -101,7 +81,7 @@ $$
 ## Generator under load
 
 When current flows, the voltage at the rectifier output drops below the open-circuit value. For
-a 6-pulse rectifier, two phases conduct at any time. With the phase resistance $R$ and phase
+a 3-phase bridge rectifier, two phases conduct at any time. With the phase resistance $R$ and phase
 inductance $L$ (star equivalent), the rectified voltage at DC current $I$ is approximately
 
 $$

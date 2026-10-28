@@ -68,7 +68,25 @@ currents directly. This enables some additional features:
   DC voltage above the rectified generator voltage, without an additional inductor.
 - The generator can be operated as a motor, e.g. to start a vertical axis wind turbine.
 
-On the other hand, the control needs the rotor position (from sensors or estimated from the
-voltages and currents), and the switching losses and the effort for the control are considerably
-higher. For small generators, a simple active rectifier followed by a separate DC/DC converter is
-often the better compromise.
+However, the control is much more complex. Sinusoidal currents in phase with the induced voltage
+require field-oriented control (FOC), as used in motor drives:
+
+- The controller needs the rotor position at all times. Position sensors (e.g. Hall sensors or
+  encoders) are usually not available in small or self-built generators. Sensorless methods
+  estimate the position from voltages and currents, but they become inaccurate at low speeds,
+  where the induced voltage is small. This is exactly where small wind turbines operate most of
+  the time.
+- The phase currents have to be measured and controlled with fast control loops at the PWM
+  frequency. The control has to be tuned to the generator parameters (resistance, inductance,
+  magnet flux), which are often unknown for small generators.
+- When the controller starts, the turbine may already be spinning. The controller has to
+  synchronize to the rotor without causing current or torque spikes.
+- All six switches are switched at the PWM frequency instead of once per period, which increases
+  the switching losses.
+- If the control fails, the MOSFETs' body diodes still rectify the generator voltage, so the
+  generator remains connected to the DC side without control.
+
+A simpler alternative is block commutation as used for brushless DC (BLDC) motors, which also
+needs the rotor position but results in rectangular instead of sinusoidal currents. For small
+generators, a simple active rectifier followed by a separate DC/DC converter is often the better
+compromise.

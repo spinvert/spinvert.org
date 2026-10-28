@@ -4,15 +4,13 @@ description: Direct battery connection, buck, boost and buck-boost converters fo
 order: 3
 ---
 
-import BoostExplorer from "~/lib/components/docs/BoostExplorer.svelte";
-
 After rectification, the DC voltage of the generator has to be matched to the battery voltage.
-This page compares the options and explains the boost converter in more detail.
+This page compares the options.
 
 ## Direct battery connection
 
 The simplest system connects the rectifier directly to the battery. Current only flows once the
-rectified generator voltage exceeds the battery voltage. Above that, the battery clamps the
+rectified generator voltage exceeds the battery voltage. In this case, the battery clamps the
 voltage, and the current is determined by the difference between generator voltage and battery
 voltage and by the internal resistance of the generator:
 
@@ -25,12 +23,13 @@ This has two drawbacks:
 - Below the speed where the generator voltage reaches the battery voltage (cut-in speed), no
   power is harvested, even though it is available.
 - The operating point is determined by the battery voltage and the generator, not by the needs
-  of the turbine. The load can only match the [optimal curve](/theory/optimal-operation/) of a
-  wind turbine at one or two wind speeds.
+  of the turbine. The turbine therefore usually doesn't run at its
+  [optimum](/theory/optimal-operation/), except by chance at a wind speed where the power drawn
+  by the battery happens to match the optimal power.
 
 For wind turbines, the generator is usually designed such that the cut-in speed is reached at a
-low wind speed. The turbine is then overloaded at high wind speeds and runs much slower than
-optimal.
+low wind speed. At high wind speeds, the rotor is slowed down below its optimal speed, as the
+battery keeps the generator output voltage low.
 
 ## Buck converter
 
@@ -50,33 +49,18 @@ A boost converter (step-up) produces an output voltage above its input voltage. 
 voltage stays _below_ the battery voltage over most of the speed range, and all voltages can stay
 in the extra-low voltage range.
 
-A switch (usually a MOSFET) connects the inductor to ground and builds up a current. When it
-turns off, the inductor current flows to the output through a diode or a second MOSFET
-(synchronous rectifier). In continuous conduction mode (CCM), the duty cycle $D$ of the switch
-only depends on the voltages:
+A switch (usually a MOSFET) connects an inductor to ground, so that its current rises. When the
+switch turns off, the inductor drives its current through a diode into the output at the higher
+voltage. The
+ratio between on-time and switching period, the duty cycle $D$, sets the voltage ratio:
 
 $$
 D = 1 - \frac{V_{in}}{V_{out}}
 $$
 
-During the on-time, the inductor current rises with a slope of $V_{in}/L$. The peak-to-peak
-ripple of the inductor current at switching frequency $f_{sw}$ is
-
-$$
-\Delta I_L = \frac{V_{in} \cdot D}{L \cdot f_{sw}}
-$$
-
-It reaches its maximum of $\Delta I_{L,max} = V_{out} / (4 \, L \, f_{sw})$ at
-$V_{in} = V_{out}/2$. If the average input current is lower than half the ripple, the inductor
-current drops to zero in every period. The converter then operates in discontinuous conduction
-mode (DCM), where the duty cycle also depends on the load.
-
-The inductor has to carry the peak current $I_{in} + \Delta I_L / 2$ without saturating. As the
-input current $I_{in} = P / V_{in}$ is highest at low input voltages, the inductor becomes large
-and expensive for high power at low voltage. A higher switching frequency reduces the inductance
-needed, but increases the switching losses.
-
-<BoostExplorer client:visible generic />
+By adjusting the duty cycle, the converter controls the current drawn from the generator. The
+inductor has to carry this current, which is highest at low input voltages ($I_{in} = P / V_{in}$),
+so a boost converter for high power at low voltage needs a large inductor.
 
 A boost converter can't operate if the input voltage exceeds the output voltage. If this can
 happen, e.g. at high speeds of a generator, the converter needs a bypass or has to be combined
@@ -95,13 +79,13 @@ highest current at the lowest input voltage.
 
 ## Comparison
 
-| Option              | Harvests below battery voltage | Controls operating point | Effort             |
-| ------------------- | ------------------------------ | ------------------------ | ------------------ |
-| Direct connection   | No                             | No                       | Lowest             |
-| Buck converter      | No (generator must be above)   | Yes                      | Medium             |
-| Boost converter     | Yes                            | Below battery voltage    | Medium             |
-| Buck-boost          | Yes                            | Yes                      | High               |
-| Boost with bypass   | Yes                            | Below battery voltage    | Medium             |
+| Option            | Harvests below battery voltage | Controls operating point | Effort |
+| ----------------- | ------------------------------ | ------------------------ | ------ |
+| Direct connection | No                             | No                       | Lowest |
+| Buck converter    | No (generator must be above)   | Yes                      | Medium |
+| Boost converter   | Yes                            | Below battery voltage    | Medium |
+| Buck-boost        | Yes                            | Yes                      | High   |
+| Boost with bypass | Yes                            | Below battery voltage    | Medium |
 
 The last option is a compromise used by the [Spinvert Boost 4820](/hardware/boost-4820/design-decisions/#boost-stage-with-bypass):
 a boost converter for the frequent low-power conditions, and a direct connection for the rare
