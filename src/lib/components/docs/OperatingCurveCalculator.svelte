@@ -583,7 +583,7 @@
       The curve ends at {fmt(curve.at(-1)?.frequency ?? 0)} Hz ({fmt(curve.at(-1)?.rpm ?? 0)} rpm),
       where the rectified voltage reaches the battery voltage and the board switches to bypass.
       Where the boost power limit applies, the current decreases again towards higher voltages to
-      keep the power constant. Electrical frequency = poles × rpm / 120.
+      keep the power constant. Electrical frequency f_e = p · n / 2 with pole count p and speed n.
     </p>
 
     <details class="mt-4 text-sm">

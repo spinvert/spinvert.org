@@ -21,11 +21,15 @@ $p/2$ full periods of the magnetic field. The electrical frequency of the genera
 therefore
 
 $$
-f_e = \frac{p}{2} \cdot \frac{n}{60} = \frac{p \cdot n}{120}
+f_e = \frac{p}{2} \cdot n = \frac{p \cdot n}{2 \cdot 60\ \text{s/min}}
 $$
 
-with the speed $n$ in rpm. A generator with 16 poles running at 600 rpm produces a voltage with
-80 Hz.
+with the rotational speed $n$, usually given in rpm (min⁻¹). For example, a generator with 16 poles
+running at 600 rpm produces a voltage with
+
+$$
+f_e = \frac{16 \cdot 600\ \text{min}^{-1}}{2 \cdot 60\ \text{s/min}} = 80\ \text{Hz}
+$$
 
 The board measures the frequency of the generator voltage to determine the speed. This is why
 the pole count is an important parameter: with a wrong value, all calculated speeds are off by
@@ -35,10 +39,16 @@ the same factor.
 
 The voltage induced in the windings (back-EMF) is proportional to the speed. It is described by
 the voltage constant $k_e$. In this documentation, $k_e$ is defined as the open-circuit RMS
-voltage between two terminals (line-to-line) per 1000 rpm:
+voltage between two terminals (line-to-line) per speed, given in V/krpm (volts per 1000 rpm):
 
 $$
-V_{LL} = k_e \cdot \frac{n}{1000}
+V_{LL} = k_e \cdot n
+$$
+
+For example, a generator with $k_e = 70\ \text{V/krpm}$ running at 600 rpm produces
+
+$$
+V_{LL} = 70\ \text{V/krpm} \cdot 0.6\ \text{krpm} = 42\ \text{V}
 $$
 
 This definition is used because it can be measured directly with a multimeter at the generator

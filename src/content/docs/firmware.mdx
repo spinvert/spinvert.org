@@ -25,7 +25,7 @@ steps:
 
 1. **Measure the frequency** of the AC generator voltage.
 2. **Calculate the speed** from the frequency and the configured pole count:
-   $n = 120 \, f_e / p$.
+   $n = 2 f_e / p$, i.e. $n = 2 \cdot 60\ \text{s/min} \cdot f_e / p$ in rpm.
 3. **Look up the target current** for this speed. Between the points of the curve, the value is
    interpolated linearly.
 4. **Control the boost converter** such that its input current matches the target current. The
