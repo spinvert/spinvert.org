@@ -24,8 +24,21 @@ that they pass the magnets at the same relative position at the same time, so th
 in phase and add up. Depending on the design, the coils of a phase are connected in series (higher
 voltage) or in parallel (higher current).
 
-The numbers of coils and poles are usually different. A common combination for axial flux
-generators is 12 poles and 9 coils, i.e. 3 coils per phase.
+The numbers of coils and poles have to be different. With one coil per pole, all coils would pass
+the magnets at the same relative position at the same time, so all voltages would be in phase
+and the generator would only provide a single phase. For three phases, the coils have to be
+shifted against each other by 120° (electrical). With $Q$ coils evenly distributed around the
+stator, the electrical angle between neighboring coils is
+
+$$
+\Delta\theta_e = \frac{p}{2} \cdot \frac{360°}{Q}
+$$
+
+A popular choice is 3 coils for every 4 poles, used in the axial flux generator designs by
+[Hugh Piggott](https://scoraigwind.co.uk/?p=953), which are widely built for small wind turbines.
+With 12 poles and 9 coils, $\Delta\theta_e = 6 \cdot 40° = 240°$, so the coils follow the sequence
+0°, 240°, 120°, 0°, … Every third coil belongs to the same phase, resulting in 3 coils per phase
+with exactly balanced phases. Other combinations are possible as well, e.g. 9 coils with 6 poles.
 
 <Callout title="Counting poles of axial flux generators">
   Axial flux generators often have two rotor discs with the stator in between. Opposite magnets
