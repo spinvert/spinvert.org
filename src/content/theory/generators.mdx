@@ -8,17 +8,35 @@ import Callout from "~/components/Callout.astro";
 import GeneratorCharacterization from "~/lib/components/docs/GeneratorCharacterization.svelte";
 
 Small wind turbines, micro hydro turbines and pedal generators usually use 3-phase permanent
-magnet synchronous generators (PMSG). The rotor carries permanent magnets, and the stator has
-three windings, typically connected in star (Y). This page describes a simple model of such a
-generator in combination with a rectifier. The same model is used in the calculators of this
+magnet synchronous generators (PMSG). The rotor carries permanent magnets, and the stator carries
+the coils of three phase windings. This page describes a simple model of such a generator in
+combination with a rectifier. The same model is used in the calculators of this
 documentation.
 
-## Poles and frequency
+## Poles, coils and phases
 
 The magnets on the rotor alternate between north and south poles. The number of poles $p$ is
-always even, and $p/2$ is the number of pole pairs. With every revolution, each winding sees
-$p/2$ full periods of the magnetic field. The electrical frequency of the generator voltage is
-therefore
+always even, and $p/2$ is the number of pole pairs.
+
+The stator has three phase windings, typically connected in star (Y). Each phase winding usually
+consists of several coils distributed around the stator. The coils of one phase are placed such
+that they pass the magnets at the same relative position at the same time, so their voltages are
+in phase and add up. Depending on the design, the coils of a phase are connected in series (higher
+voltage) or in parallel (higher current).
+
+The numbers of coils and poles are usually different. A common combination for axial flux
+generators is 12 poles and 9 coils, i.e. 3 coils per phase.
+
+<Callout title="Counting poles of axial flux generators">
+  Axial flux generators often have two rotor discs with the stator in between. Opposite magnets
+  on both discs face each other with opposite polarity, so that the magnetic flux passes through
+  the coils. Each such pair of magnets forms one pole, so only the magnets on one disc are counted.
+</Callout>
+
+## Frequency
+
+With every revolution, each coil sees $p/2$ full periods of the magnetic field. The electrical
+frequency of the generator voltage is therefore
 
 $$
 f_e = \frac{p}{2} \cdot n = \frac{p \cdot n}{2 \cdot 60\ \text{s/min}}
@@ -31,9 +49,15 @@ $$
 f_e = \frac{16 \cdot 600\ \text{min}^{-1}}{2 \cdot 60\ \text{s/min}} = 80\ \text{Hz}
 $$
 
-The board measures the frequency of the generator voltage to determine the speed. This is why
-the pole count is an important parameter: with a wrong value, all calculated speeds are off by
-the same factor.
+The number of coils doesn't appear in the equation. The coils of a phase all produce the same
+frequency, and their number and connection only affect the voltage, resistance and inductance of
+the phase. A generator with 12 poles and 9 coils at 300 rpm produces 30 Hz, the same as any other
+12-pole generator.
+
+Power electronics that derive the speed from the frequency need the correct pole count: with a
+wrong value, all calculated speeds are off by the same factor. If the pole count is unknown, it
+can be determined from a measurement of frequency and speed as $p = 2 f_e / n$ (see
+[Measuring your generator](#measuring-your-generator)).
 
 ## Voltage
 
