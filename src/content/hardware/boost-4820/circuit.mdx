@@ -1,6 +1,6 @@
 ---
 title: Circuit description
-description: Active rectifier, boost converter, bypass, dump load and measurements of the Spinvert Boost 4820.
+description: Active rectifier, boost converter, bypass, dump load, measurements and connectors of the Spinvert Boost 4820.
 order: 2
 ---
 
@@ -8,7 +8,8 @@ import BoostExplorer from "~/lib/components/docs/BoostExplorer.svelte";
 
 The board consists of an active rectifier, a DC/DC boost converter with bypass, a dump load
 output and the measurement and control circuitry. The schematic and PCB are designed with KiCad,
-and the design files are available in the [GitHub repository](https://github.com/spinvert/).
+and the design files are available in the
+[GitHub repository](https://github.com/spinvert/spinvert-boost-4820).
 
 ## Active rectifier
 
@@ -18,13 +19,17 @@ the low channel resistance instead of a diode. The rectifier is rated for 20 A. 
 [Rectifiers](/theory/rectifiers/#active-rectifier) for the operating principle and a comparison
 of the losses with a diode bridge.
 
-{/* TODO: Add details about the MOSFETs, gate drivers and how the switching instants are determined. */}
+The six MOSFETs (Infineon BSC040N10NS5, 100 V, 4 mΩ) are controlled by two LM74680 ideal diode
+bridge controllers from Texas Instruments. They measure the voltage across each MOSFET and switch
+it on whenever its body diode would conduct, without any involvement of the microcontroller.
 
 ## Boost converter
 
 The boost converter steps the rectified voltage up to the battery voltage. It uses a synchronous
 topology with two MOSFETs: the low-side switch builds up the inductor current, and the high-side
-switch replaces the diode of a basic boost converter. The operating principle is described in
+switch replaces the diode of a basic boost converter. Both are of the same type as in the
+rectifier and are driven by an LM5107 half-bridge driver. The inductor current is measured with a
+shunt resistor and an INA299 current sense amplifier. The operating principle is described in
 [DC/DC converters](/theory/converters/#boost-converter).
 
 | Parameter                | Value                    |
@@ -45,10 +50,13 @@ component. The input and output of the converter are filtered to meet EMC requir
 
 ## Bypass
 
-When the rectified voltage reaches the battery voltage, the duty cycle of the boost converter
-approaches zero and boosting is no longer possible. In this case, the bypass connects the
-rectifier output directly to the battery. The bypass is rated for 20 A and has only conduction
-losses.
+The bypass is a Schottky diode (SDT30B100D1, 100 V, 30 A) from the rectifier output to the
+battery. When the rectified voltage reaches the battery voltage, the duty cycle of the boost
+converter approaches zero and boosting is no longer possible. As soon as the rectified voltage
+exceeds the battery voltage by the forward voltage of the diode, the diode conducts
+automatically and passes the current directly to the battery, without any control by the
+microcontroller. The bypass is rated for 20 A. Its losses are the conduction losses of the diode,
+i.e. its forward voltage of around 0.6 V times the current.
 
 In bypass mode, the battery voltage determines the rectified voltage. The current is then given
 by the generator voltage, the battery voltage and the internal resistance of the generator, as
@@ -72,7 +80,11 @@ The resistance should be chosen such that the current stays below 20 A at the ma
 voltage of 60 V, i.e. $R_{dump} \geq 3\ \Omega$. A 3 Ω load absorbs 768 W at 48 V and 1200 W
 at 60 V, so its power rating must be sufficient for continuous operation.
 
-{/* TODO: Describe how the dump load is switched (on/off or PWM) and the connector. */}
+The dump load is connected between the terminals D+ (rectified voltage) and D−, which is
+switched to ground by a MOSFET. A free-wheeling diode across the terminals takes over the current
+of inductive loads when the MOSFET turns off.
+
+{/* TODO: Describe the PWM control of the dump load once tested. */}
 
 ## Measurements
 
@@ -83,12 +95,23 @@ The control of the board is based on the following measurements:
 - **Rectified voltage** at the input of the boost converter
 - **Boost converter input current**, controlled according to the lookup curve
 
+The measurements and the control are handled by an STM32G0B1 microcontroller.
+
 The speed is calculated from the frequency as $n = 2 f_e / p$ (in s⁻¹, multiplied by 60 s/min
 for rpm), which requires the pole count $p$ of the generator to be configured.
 
-## Interfaces
+## Connectors
 
-- **USB** for monitoring and debugging
-- **CAN-FD** for integration with other devices, e.g. battery management systems
+| Connector | Type                               | Pins                                       |
+| --------- | ---------------------------------- | ------------------------------------------ |
+| J3        | Screw terminal, 3-pin, 9.5 mm      | Generator phases L1, L2, L3                |
+| J6        | Screw terminal, 2-pin, 9.5 mm      | Dump load D+, D−                           |
+| J2        | Screw terminal, 2-pin, 9.5 mm      | Battery B−, B+                             |
+| J1        | Pluggable terminal, 3-pin, 3.81 mm | CAN: GND, CAN_L, CAN_H                     |
+| J4        | USB-C (USB 2.0)                    | Monitoring and debugging                   |
+| J5        | Pin header, 7-pin, 2.54 mm         | 3V3, SWCLK, GND, SWDIO, RST, TX, RX        |
 
-{/* TODO: Add connector pinouts, dimensions and a photo of the board. */}
+The power terminals are located along one edge of the board. The pin header J5 provides the SWD
+interface for programming the microcontroller and a serial console (UART).
+
+The board measures 90 × 90 mm and has four M3 mounting holes with a spacing of 82 × 82 mm.
