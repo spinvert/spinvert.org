@@ -2,6 +2,7 @@
 import { defineConfig, fontProviders } from "astro/config";
 
 import mdx from "@astrojs/mdx";
+import sitemap from "@astrojs/sitemap";
 import svelte from "@astrojs/svelte";
 
 import { satteri } from "@astrojs/markdown-satteri";
@@ -11,7 +12,7 @@ import { katexPlugin } from "./src/lib/markdown/katex.ts";
 // https://astro.build/config
 export default defineConfig({
   site: "https://spinvert.org",
-  integrations: [svelte(), mdx()],
+  integrations: [svelte(), mdx(), sitemap()],
   build: {
     format: "directory",
   },

@@ -16,6 +16,12 @@ export const getStaticPaths = (async () => {
 const { entry } = Astro.props;
 const { Content, headings } = await render(entry);
 const pages = await docPages("theory");
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "Theory", path: "/theory/" },
+  ...(entry.id === "index" ? [] : [{ name: entry.data.title, path: `/theory/${entry.id}/` }]),
+];
 ---
 
 <DocsLayout
@@ -24,6 +30,7 @@ const pages = await docPages("theory");
   headings={headings}
   section="Theory"
   pages={pages}
+  breadcrumbs={breadcrumbs}
 >
   <Content />
 </DocsLayout>

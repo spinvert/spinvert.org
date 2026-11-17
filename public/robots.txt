@@ -1,0 +1,5 @@
+# All crawlers are welcome, including search engines and AI crawlers
+User-agent: *
+Allow: /
+
+Sitemap: https://spinvert.org/sitemap-index.xml

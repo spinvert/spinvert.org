@@ -3,14 +3,39 @@ import { Font } from "astro:assets";
 import "../styles/global.css";
 import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
+import type { JsonLd } from "$lib/seo";
 import { site } from "$lib/site";
 
 interface Props {
+  /** Page title, the site name is appended unless already included */
   title?: string;
   description?: string;
+  /** Open Graph type: "website" for the front page, "article" for content pages */
+  type?: "website" | "article";
+  /** Structured data for search engines and AI systems */
+  jsonLd?: JsonLd;
+  /** Prevent search engines from indexing the page (e.g. 404 page) */
+  noindex?: boolean;
 }
 
-const { title, description } = Astro.props;
+const {
+  title,
+  description = site.description,
+  type = "article",
+  jsonLd,
+  noindex = false,
+} = Astro.props;
+
+const fullTitle = !title
+  ? site.title
+  : title.includes(site.name)
+    ? title
+    : `${title} · ${site.name}`;
+const siteUrl = Astro.site ?? Astro.url;
+const canonical = new URL(Astro.url.pathname, siteUrl).href;
+const image = new URL(site.image.src, siteUrl).href;
+// Escape "<" so that the JSON can't close the script tag early
+const jsonLdHtml = jsonLd && JSON.stringify(jsonLd).replace(/</g, "\\u003c");
 ---
 
 <!doctype html>
@@ -18,12 +43,29 @@ const { title, description } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
-    {description && <meta name="description" content={description} />}
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
     <Font cssVariable="--font-inter" preload />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
     <meta name="generator" content={Astro.generator} />
-    <title>{title ? `${title} · ${site.name}` : site.name}</title>
+
+    <!-- Link previews in social media and chat apps -->
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={image} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={site.image.alt} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    {jsonLdHtml && <script type="application/ld+json" set:html={jsonLdHtml} />}
     <script is:inline>
       // Runs before first paint to avoid a flash of the wrong theme
       const theme =

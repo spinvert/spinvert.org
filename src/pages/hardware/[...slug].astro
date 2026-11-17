@@ -20,14 +20,23 @@ const pages = await docPages(
   (other) => other.id === product || other.id.startsWith(`${product}/`),
 );
 const productIndex = (await getCollection("hardware")).find((other) => other.id === product);
+const section = productIndex?.data.section ?? "Hardware";
+
+// There is no overview page for all hardware yet, so the product is the first level
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: section, path: `/hardware/${product}/` },
+  ...(entry.id === product ? [] : [{ name: entry.data.title, path: `/hardware/${entry.id}/` }]),
+];
 ---
 
 <DocsLayout
   title={entry.data.title}
   description={entry.data.description}
   headings={headings}
-  section={productIndex?.data.section ?? "Hardware"}
+  section={section}
   pages={pages}
+  breadcrumbs={breadcrumbs}
 >
   <!-- Shown at the top of every hardware page during the beta phase -->
   <Callout type="caution" title="Beta: prototypes in testing">

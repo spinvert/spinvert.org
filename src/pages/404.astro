@@ -1,0 +1,31 @@
+---
+import { Button } from "$lib/components/ui/button";
+import Layout from "~/layouts/Layout.astro";
+---
+
+<!-- GitHub Pages serves dist/404.html for all unknown URLs -->
+<Layout
+  title="Page not found"
+  description="The requested page does not exist on spinvert.org."
+  type="website"
+  noindex
+>
+  <div class="mx-auto flex max-w-6xl flex-col items-center px-4 py-24 text-center sm:px-6">
+    <p class="text-sm font-medium text-primary">404</p>
+    <h1 class="mt-2 text-4xl font-semibold tracking-tight">Page not found</h1>
+    <p class="mt-4 max-w-xl text-muted-foreground">
+      The page you are looking for does not exist or has been moved.
+    </p>
+    <div class="mt-8 flex flex-wrap justify-center gap-3">
+      <Button href="/" size="lg" class="px-4">
+        Go to the front page
+      </Button>
+      <Button href="/hardware/boost-4820/" variant="outline" size="lg" class="px-4">
+        Hardware docs
+      </Button>
+      <Button href="/theory/" variant="outline" size="lg" class="px-4">
+        Theory
+      </Button>
+    </div>
+  </div>
+</Layout>

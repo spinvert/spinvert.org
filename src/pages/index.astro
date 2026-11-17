@@ -1,8 +1,11 @@
 ---
 import Hero from "../components/Hero.astro";
 import Layout from "../layouts/Layout.astro";
+import { websiteJsonLd } from "$lib/seo";
+
+const siteUrl = Astro.site ?? Astro.url;
 ---
 
-<Layout>
+<Layout type="website" jsonLd={websiteJsonLd(siteUrl)}>
   <Hero />
 </Layout>
