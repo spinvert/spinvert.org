@@ -10,6 +10,7 @@ import { katexPlugin } from "./src/lib/markdown/katex.ts";
 
 // https://astro.build/config
 export default defineConfig({
+  site: "https://spinvert.org",
   integrations: [svelte(), mdx()],
   build: {
     format: "directory",
