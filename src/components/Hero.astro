@@ -35,12 +35,12 @@ const sources = [
         <Button href={site.repoUrl} size="lg" class="px-4">
           Explore on GitHub
         </Button>
-        <Button href="/contact" variant="outline" size="lg" class="px-4">
+        <Button href="/imprint/" variant="outline" size="lg" class="px-4">
           Get in touch
         </Button>
       </div>
     </div>
-    <a href="/hardware/boost-4820/" class="mx-auto block max-w-xl lg:max-w-none">
+    <a href="/hardware/boost-4820/" class="relative mx-auto block max-w-xl lg:max-w-none">
       <img
         src="/spinvert-boost-4820-iso.webp"
         alt="Rendering of the Spinvert Boost 4820 circuit board"
@@ -49,6 +49,15 @@ const sources = [
         fetchpriority="high"
         class="h-auto w-full"
       />
+      <!-- Rubber-stamp style beta notice on top of the board rendering -->
+      <div class="absolute bottom-[12%] left-[5%] -rotate-12 rounded-lg bg-background/75 backdrop-blur-sm border-[3px] border-double border-red-600/80 px-3 py-1.5 text-center text-red-600/80 uppercase dark:border-red-400/80 dark:text-red-400/80">
+        <p class="text-2xl leading-none font-black tracking-[0.2em] sm:text-3xl">Beta</p>
+        <p class="mt-1 text-[0.625rem] leading-tight font-bold tracking-wider sm:text-xs">
+          Prototypes
+          <br />
+          in testing
+        </p>
+      </div>
     </a>
   </div>
 </section>

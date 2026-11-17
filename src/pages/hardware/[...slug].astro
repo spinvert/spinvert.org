@@ -2,6 +2,7 @@
 import type { GetStaticPaths } from "astro";
 import { getCollection, render } from "astro:content";
 import { docPages } from "$lib/docs";
+import Callout from "~/components/Callout.astro";
 import DocsLayout from "~/layouts/DocsLayout.astro";
 
 export const getStaticPaths = (async () => {
@@ -28,5 +29,13 @@ const productIndex = (await getCollection("hardware")).find((other) => other.id 
   section={productIndex?.data.section ?? "Hardware"}
   pages={pages}
 >
+  <!-- Shown at the top of every hardware page during the beta phase -->
+  <Callout type="caution" title="Beta: prototypes in testing">
+    <p>
+      The first prototypes of hardware version v0.1 are currently being built and tested. The design
+      and documentation may still change based on the test results. Building and operating the
+      hardware is at your own risk.
+    </p>
+  </Callout>
   <Content />
 </DocsLayout>
