@@ -15,7 +15,7 @@ export const navLinks: NavItem[] = [
 ];
 
 export const legalLinks = [
-  { label: "Imprint", href: "/imprint/" },
+  // The imprint holds the only copy of the full address and contact details
+  { label: "Contact / Imprint", href: "/imprint/" },
   { label: "Privacy", href: "/privacy/" },
-  { label: "Contact", href: "/contact/" },
 ];
