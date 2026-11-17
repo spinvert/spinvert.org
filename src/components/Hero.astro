@@ -1,7 +1,6 @@
 ---
 import { Bike, Droplets, Wind } from "@lucide/svelte";
 import { Button } from "$lib/components/ui/button";
-import { site } from "$lib/site";
 
 const sources = [
   { label: "Wind", icon: Wind },
@@ -32,11 +31,11 @@ const sources = [
         ))}
       </ul>
       <div class="mt-10 flex flex-wrap justify-center gap-3 lg:justify-start">
-        <Button href={site.repoUrl} size="lg" class="px-4">
+        <Button href="https://github.com/spinvert/spinvert-boost-4820" size="lg" class="px-4">
           Explore on GitHub
         </Button>
-        <Button href="/imprint/" variant="outline" size="lg" class="px-4">
-          Get in touch
+        <Button href="/theory/" variant="outline" size="lg" class="px-4">
+          Learn the theory
         </Button>
       </div>
     </div>
