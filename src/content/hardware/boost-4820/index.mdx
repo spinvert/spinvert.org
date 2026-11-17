@@ -13,12 +13,15 @@ The **Spinvert Boost 4820** is an open-source active rectifier and DC/DC boost c
 performance of small wind turbines at low wind speeds, but it is suitable for any 3-phase
 permanent magnet generator, e.g. in micro hydro power plants or pedal power generators.
 
+![Spinvert Boost 4820 top view](/spinvert-boost-4820-top.webp)
+
 The hardware is based on the [Libre Solar](https://libre.solar) MPPT charge controllers and will
 be supported by the Libre Solar charge controller firmware.
 
 <Callout type="caution" title="Early development stage">
-  The project is at a very early stage of development (alpha). Major issues are expected, and the
-  documentation describes the intended design, which may still change.
+  The first hardware version (v0.1) is ready for production, but it has not been tested yet.
+  Major issues are expected, and the documentation describes the intended design, which may still
+  change.
 </Callout>
 
 ## How it works
@@ -45,20 +48,25 @@ Select an operating mode to see how the power flows through the board:
 
 ## Specifications
 
-| Parameter                  | Value                                     |
-| -------------------------- | ----------------------------------------- |
-| Generator type             | 3-phase permanent magnet generator        |
-| Input voltage (rectified)  | 0 to 60 V                                 |
-| Rectifier current          | max. 20 A                                 |
-| Output voltage             | 48 V nominal (battery or DC bus)          |
-| Boost converter            | max. 10 A output (approx. 480 W)          |
-| Bypass                     | max. 20 A output (approx. 960 W)          |
-| Dump load output           | max. 20 A                                 |
-| Boost inductor / frequency | 47 µH / 128 kHz                           |
-| Interfaces                 | USB (monitoring, debugging), CAN-FD       |
-| Firmware                   | Libre Solar charge controller firmware    |
+| Parameter                  | Value                                  |
+| -------------------------- | -------------------------------------- |
+| Hardware version           | v0.1                                   |
+| Generator type             | 3-phase permanent magnet generator     |
+| Input voltage (rectified)  | 0 to 60 V                              |
+| Rectifier current          | max. 20 A                              |
+| Output voltage             | 48 V nominal (battery or DC bus)       |
+| Boost converter            | max. 10 A output (approx. 480 W)       |
+| Bypass                     | max. 20 A output (approx. 960 W)       |
+| Dump load output           | max. 20 A                              |
+| Boost inductor / frequency | 47 µH / 128 kHz                        |
+| Interfaces                 | USB (monitoring, debugging), CAN-FD    |
+| Firmware                   | Libre Solar charge controller firmware |
+| Board dimensions           | 90 × 90 mm                             |
+| Mounting                   | 4 × M3, 82 × 82 mm hole spacing        |
 
-{/* TODO: Add dimensions, connectors, operating temperature and standby consumption. */}
+The connectors are described in the [circuit description](/hardware/boost-4820/circuit/#connectors).
+
+{/* TODO: Add operating temperature and standby consumption. */}
 
 ## Contents of this documentation
 
@@ -79,7 +87,7 @@ how a wind turbine is operated optimally.
 ## Source files and license
 
 The schematic and PCB are designed with KiCad. Hardware design files are available in the
-[GitHub repository](https://github.com/spinvert/) and are licensed under the
+[GitHub repository](https://github.com/spinvert/spinvert-boost-4820) and are licensed under the
 [CERN Open Hardware Licence Version 2 - Weakly Reciprocal](https://cern-ohl.web.cern.ch/).
 
 The documentation is licensed under the
