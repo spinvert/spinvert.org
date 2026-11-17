@@ -1,0 +1,240 @@
+---
+/**
+ * Wiring diagram of the Spinvert Boost 4820, based on the top view render (800 × 800 px).
+ *
+ * The render is drawn at 600 × 600 units at (150, 20), so render pixel positions p map to
+ * 150 + 0.75 · p (x) and 20 + 0.75 · p (y). Connector positions were derived from the PCB
+ * layout, calibrated with the mounting holes in the render.
+ */
+
+const img = { x: 150, y: 20, size: 600 };
+const at = (px: number, py: number) => ({ x: img.x + px * 0.75, y: img.y + py * 0.75 });
+
+// Screw terminals, left to right as printed on the board
+const terminals = [
+  { label: "L1", ...at(175.5, 700) },
+  { label: "L2", ...at(250.4, 700) },
+  { label: "L3", ...at(325.4, 700) },
+  { label: "D+", ...at(399.9, 700) },
+  { label: "D−", ...at(474.7, 700) },
+  { label: "B−", ...at(549.5, 700) },
+  { label: "B+", ...at(624.3, 700) },
+];
+const [l1, l2, l3, dp, dm, bm, bp] = terminals;
+const wireTop = 595; // below the terminal block
+
+// Connectors at the top edge, labeled on the right side
+const labels = [
+  { text: "USB-C: monitoring", ...at(632.4, 94.6), ly: 70 },
+  { text: "CAN bus (optional)", ...at(498.1, 108.2), ly: 112 },
+  { text: "Debug: SWD, UART", ...at(711.1, 191.4), ly: 164 },
+];
+
+const generator = { x: 180, y: 880, r: 48 };
+const phaseX = [150, 180, 210];
+const heater = { x: 420, y: 800, w: 116, h: 80 };
+const battery = { x: 770, y: 820, w: 150, h: 80 };
+const minusX = battery.x + 35;
+const plusX = battery.x + battery.w - 35;
+---
+
+<figure class="not-prose my-8">
+  <div class="overflow-x-auto">
+    <svg
+      viewBox="0 0 1000 980"
+      class="w-full min-w-[640px]"
+      role="img"
+      aria-label="Wiring diagram: generator phases to L1, L2 and L3 via a stop switch, dump load to D+ and D−, battery to B− and B+ via a fuse on B+"
+    >
+      <image
+        href="/spinvert-boost-4820-top.webp"
+        x={img.x}
+        y={img.y}
+        width={img.size}
+        height={img.size}
+      />
+
+      <g class="fill-none stroke-foreground" stroke-width="3" stroke-linejoin="round">
+        <!-- Generator phases via stop switch -->
+        <path d={`M${l1.x},${wireTop} V680 H${phaseX[0]} V${generator.y}`} />
+        <path d={`M${l2.x},${wireTop} V700 H${phaseX[1]} V${generator.y}`} />
+        <path d={`M${l3.x},${wireTop} V720 H${phaseX[2]} V${generator.y}`} />
+
+        <!-- Dump load -->
+        <path d={`M${dp.x},${wireTop} V${heater.y}`} />
+        <path d={`M${dm.x},${wireTop} V${heater.y}`} />
+
+        <!-- Battery negative -->
+        <path d={`M${bm.x},${wireTop} V700 H${minusX} V${battery.y}`} />
+      </g>
+      <!-- Battery positive via fuse -->
+      <path
+        d={`M${bp.x},${wireTop} V680 H${plusX} V${battery.y}`}
+        class="fill-none stroke-[#e34948] dark:stroke-[#e66767]"
+        stroke-width="3"
+        stroke-linejoin="round"
+      />
+
+      <!-- Terminal labels next to the wires -->
+      {terminals.map((t) => (
+        <>
+          <circle cx={t.x} cy={t.y} r="13" class="fill-none stroke-primary" stroke-width="3" />
+          <text x={t.x + 7} y={wireTop + 26} class="fill-foreground text-[17px] font-semibold">
+            {t.label}
+          </text>
+        </>
+      ))}
+
+      <!-- Stop switch across the phases -->
+      <rect
+        x="110"
+        y="745"
+        width="140"
+        height="44"
+        rx="6"
+        class="fill-background stroke-foreground"
+        stroke-width="2"
+      />
+      <text x="180" y="773" text-anchor="middle" class="fill-foreground text-[16px]">
+        Stop switch
+      </text>
+
+      <!-- Generator -->
+      <circle
+        cx={generator.x}
+        cy={generator.y}
+        r={generator.r}
+        class="fill-background stroke-foreground"
+        stroke-width="3"
+      />
+      <text
+        x={generator.x}
+        y={generator.y - 2}
+        text-anchor="middle"
+        class="fill-foreground text-[24px] font-semibold"
+      >
+        G
+      </text>
+      <text
+        x={generator.x}
+        y={generator.y + 22}
+        text-anchor="middle"
+        class="fill-foreground text-[16px]"
+      >
+        3~
+      </text>
+      <text
+        x={generator.x}
+        y={generator.y + generator.r + 28}
+        text-anchor="middle"
+        class="fill-foreground text-[17px] font-medium"
+      >
+        Generator
+      </text>
+
+      <!-- Dump load -->
+      <rect
+        x={heater.x}
+        y={heater.y}
+        width={heater.w}
+        height={heater.h}
+        rx="6"
+        class="fill-background stroke-foreground"
+        stroke-width="3"
+      />
+      <path
+        d={`M${heater.x + 18},${heater.y + 56} l10,-24 l10,24 l10,-24 l10,24 l10,-24 l10,24 l10,-24 l10,24 l10,-24`}
+        class="fill-none stroke-foreground"
+        stroke-width="2.5"
+        stroke-linejoin="round"
+      />
+      <text
+        x={heater.x + heater.w / 2}
+        y={heater.y + heater.h + 28}
+        text-anchor="middle"
+        class="fill-foreground text-[17px] font-medium"
+      >
+        Dump load
+      </text>
+      <text
+        x={heater.x + heater.w / 2}
+        y={heater.y + heater.h + 50}
+        text-anchor="middle"
+        class="fill-muted-foreground text-[15px]"
+      >
+        e.g. heater, ≥ 3 Ω
+      </text>
+
+      <!-- Fuse in the positive battery line -->
+      <rect
+        x={plusX - 14}
+        y="736"
+        width="28"
+        height="50"
+        rx="3"
+        class="fill-background stroke-[#e34948] dark:stroke-[#e66767]"
+        stroke-width="3"
+      />
+      <text x={plusX + 24} y="767" class="fill-foreground text-[16px]">
+        Fuse
+      </text>
+
+      <!-- Battery -->
+      <rect
+        x={battery.x}
+        y={battery.y}
+        width={battery.w}
+        height={battery.h}
+        rx="6"
+        class="fill-background stroke-foreground"
+        stroke-width="3"
+      />
+      <text x={minusX} y={battery.y + 32} text-anchor="middle" class="fill-foreground text-[22px]">
+        −
+      </text>
+      <text x={plusX} y={battery.y + 32} text-anchor="middle" class="fill-foreground text-[22px]">
+        +
+      </text>
+      <text
+        x={battery.x + battery.w / 2}
+        y={battery.y + 64}
+        text-anchor="middle"
+        class="fill-foreground text-[16px]"
+      >
+        48 V
+      </text>
+      <text
+        x={battery.x + battery.w / 2}
+        y={battery.y + battery.h + 28}
+        text-anchor="middle"
+        class="fill-foreground text-[17px] font-medium"
+      >
+        Battery
+      </text>
+
+      <!-- Labels for the connectors at the top edge -->
+      {labels.map((l) => (
+        <>
+          <path
+            d={`M${l.x},${l.y} L780,${l.ly}`}
+            class="fill-none stroke-background"
+            stroke-width="5"
+          />
+          <path
+            d={`M${l.x},${l.y} L780,${l.ly}`}
+            class="fill-none stroke-primary"
+            stroke-width="2"
+          />
+          <circle cx={l.x} cy={l.y} r="6" class="fill-primary stroke-background" stroke-width="2" />
+          <text x="790" y={l.ly + 6} class="fill-foreground text-[16px]">
+            {l.text}
+          </text>
+        </>
+      ))}
+    </svg>
+  </div>
+  <figcaption class="mt-2 text-sm text-muted-foreground">
+    Wiring of the Spinvert Boost 4820. Terminals from left to right: generator phases L1 to L3, dump
+    load D+ and D−, battery B− and B+.
+  </figcaption>
+</figure>

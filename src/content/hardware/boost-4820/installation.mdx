@@ -5,6 +5,7 @@ order: 5
 ---
 
 import Callout from "~/components/Callout.astro";
+import WiringDiagram from "~/components/WiringDiagram.astro";
 
 <Callout type="caution" title="Early development stage">
   The board is not yet ready for unattended operation. Use it only for testing and development,
@@ -21,6 +22,26 @@ A typical system consists of the following components:
 - **Dump load**, e.g. a heating element, connected to the dump load output
 - **48 V battery** with fuse and, ideally, a battery management system
 - Loads or an **off-grid inverter** connected to the battery
+
+## Wiring
+
+<WiringDiagram />
+
+- **Generator:** Connect the three phases to L1, L2 and L3. The order of the phases doesn't
+  matter. Install the stop switch between generator and board.
+- **Dump load:** Connect the dump load between D+ and D−. D+ carries the rectified generator
+  voltage, and D− is switched to ground by the board. Never connect D+ or D− to the battery or to
+  ground, otherwise the dump load is either permanently on or shorted. The resistance must be at
+  least 3 Ω (see [Dump load](/hardware/boost-4820/circuit/#dump-load)).
+- **Battery:** Connect the battery to B− and B+, with a fuse in the B+ line close to the battery.
+  Check the polarity before connecting.
+- **USB and CAN** are optional and used for configuration and monitoring.
+
+Do all wiring with the stop switch activated, so that the generator can't produce any voltage.
+The pin assignment of all connectors can be found in the
+[circuit description](/hardware/boost-4820/circuit/#connectors).
+
+{/* TODO: Add wire gauges and terminal torques. */}
 
 ## Safety
 
@@ -63,5 +84,3 @@ consider surge protection on the cables from the turbine.
 6. Compare the measured operating points with the values from the calculator. If the rotor runs
    consistently faster or slower than expected, adjust $C_{p,max}$ and $\lambda_{opt}$ and
    recalculate the curve.
-
-{/* TODO: Add connection diagram, connector assignment, wire gauges and terminal torques. */}
