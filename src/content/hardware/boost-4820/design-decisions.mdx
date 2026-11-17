@@ -32,8 +32,9 @@ chosen for several reasons:
 - **Physics:** A boost converter can only increase the voltage. As soon as the rectified voltage
   reaches the battery voltage, the converter can't operate anymore, and a direct connection is the
   only option anyway.
-- **Efficiency:** In bypass mode, only the conduction losses of the bypass switch occur. There are
-  no switching losses and no inductor losses.
+- **Simplicity and efficiency:** The bypass is a Schottky diode, which conducts automatically as
+  soon as the rectified voltage exceeds the battery voltage. It needs no control, and only its
+  conduction losses occur. There are no switching losses and no inductor losses.
 - **Wind statistics:** The power in the wind grows with the cube of the wind speed. At typical
   sites, most of the operating hours are at low wind speeds where the boost converter matters
   most, while full power is reached only rarely (see [Energy yield](/theory/energy-yield/)). It

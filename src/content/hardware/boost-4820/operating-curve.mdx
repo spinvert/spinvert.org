@@ -22,11 +22,11 @@ Boost 4820, the optimal curve can't be followed in the following cases:
   about 480 W at 48 V. If the optimal power is higher, the current is limited. The rotor then
   accelerates beyond its optimal speed until the rotor power matches the limit.
 - **Bypass:** Once the rectified voltage reaches the battery voltage, the boost converter can't
-  operate anymore and the board switches to bypass. The generator is now connected directly to
-  the battery, and the current is determined by the difference between generator voltage and
-  battery voltage:
+  operate anymore and the bypass diode starts to conduct. The generator is now connected
+  directly to the battery, and the current is determined by the difference between generator
+  voltage and battery voltage, reduced by the forward voltage $V_F$ of the bypass diode:
   $$
-  I = \frac{V_{dc,0} - V_{bat}}{2R + X_c + 2R_{DS(on)}}
+  I = \frac{V_{dc,0} - V_{bat} - V_F}{2R + X_c + 2R_{DS(on)}}
   $$
   The board can't control the operating point in this mode. Above 20 A, the ratings of bypass
   and rectifier are exceeded and the turbine has to be slowed down by other means.
@@ -59,7 +59,7 @@ be designed for a higher voltage. The calculator therefore also determines the b
 version of the generator for this case: same magnets and copper volume, but a different number of
 turns, so that resistance and inductance scale with $k_e^2$.
 
-For the example turbine, the Spinvert Boost yields about 18 % more energy than the system with
+For the example turbine, the Spinvert Boost yields about 20 % more energy than the system with
 the optimized generator at a sheltered site with 3.5 m/s mean wind speed. At 6.5 m/s, the
 advantage drops to about 6 %. Compared to the same generator without boost stage, the gain is
 much larger at low wind speeds. The boost stage pays off most at sites with low mean wind speeds
@@ -81,7 +81,7 @@ of 0.35 and 6 are a reasonable starting point for 3-bladed rotors.
 <Callout title="Assumptions">
   The calculation assumes steady-state conditions and a generic shape of the $C_p(\lambda)$ curve,
   scaled to the given $C_{p,max}$ and $\lambda_{opt}$. Friction and iron losses of the generator,
-  losses in cables and the voltage drop of the bypass are neglected. MOSFETs of the active
+  losses in cables are neglected. MOSFETs of the active
   rectifier are assumed to have 5 mΩ on-resistance. Output at wind speeds above 20 m/s
   is ignored in the energy yield.
 </Callout>

@@ -24,7 +24,7 @@
     bypass: {
       label: "High wind: bypass",
       description:
-        "The rectified voltage reaches the battery voltage, so boosting is not needed anymore. The rectifier is connected directly to the output, allowing up to 20 A.",
+        "The rectified voltage reaches the battery voltage, so boosting is not needed anymore. The bypass diode conducts automatically and connects the rectifier directly to the output, allowing up to 20 A.",
       paths: ["generator", "bypass"],
     },
     dump: {

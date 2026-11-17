@@ -581,7 +581,7 @@
     />
     <p class="text-xs text-muted-foreground">
       The curve ends at {fmt(curve.at(-1)?.frequency ?? 0)} Hz ({fmt(curve.at(-1)?.rpm ?? 0)} rpm),
-      where the rectified voltage reaches the battery voltage and the board switches to bypass.
+      where the rectified voltage reaches the battery voltage and the bypass diode takes over.
       Where the boost power limit applies, the current decreases again towards higher voltages to
       keep the power constant. Electrical frequency f_e = p · n / 2 with pole count p and speed n.
     </p>

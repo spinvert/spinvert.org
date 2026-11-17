@@ -47,7 +47,7 @@ The board switches between the following modes:
 | --------- | ---------------------------------------------------- | --------------------------------------------------------------- |
 | Standby   | Generator speed too low to deliver power             | No load on the generator, so that the rotor can start up        |
 | Boost     | Rectified voltage below battery voltage              | Boost converter tracks the lookup curve                         |
-| Bypass    | Rectified voltage reaches battery voltage            | Rectifier connected directly to the battery                     |
+| Bypass    | Rectified voltage reaches battery voltage            | Boost converter idle, bypass diode conducts automatically       |
 | Dump load | Battery full, overspeed or current above rating      | Generator loaded by the dump load to limit speed and voltage    |
 
 <PowerFlowDiagram client:visible />

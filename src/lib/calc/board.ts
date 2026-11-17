@@ -10,6 +10,8 @@ export const board = {
   rectifierMaxCurrent: 20,
   /** Maximum current through the bypass path [A] */
   bypassMaxCurrent: 20,
+  /** Typical forward voltage of the bypass diode (Schottky) at high current [V] */
+  bypassDiodeForwardVoltage: 0.6,
   /** Maximum dump load current [A] */
   dumpLoadMaxCurrent: 20,
   /** Boost inductor [H] */

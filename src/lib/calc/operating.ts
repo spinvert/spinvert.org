@@ -27,8 +27,8 @@ export interface WindSystem {
  * - `boost`: The boost converter controls the generator current along the optimal curve.
  * - `boost-limited`: As `boost`, but the current is reduced to stay within the ratings of the
  *   boost stage. The rotor speeds up beyond its optimal speed.
- * - `bypass`: The rectified voltage exceeds the battery voltage and the rectifier is connected
- *   directly to the output. The battery voltage determines the generator current.
+ * - `bypass`: The rectified voltage exceeds the battery voltage and the bypass diode connects
+ *   the rectifier directly to the output. The battery voltage determines the generator current.
  * - `overload`: Bypass current above its rating. The turbine has to be slowed down by other
  *   means (dump load in combination with a mechanical brake, furling, a smaller rotor).
  */
@@ -98,16 +98,9 @@ export function controlPoint(sys: WindSystem, rpm: number): ControlPoint {
   }
 
   // A boost converter can't operate with the input voltage above the output voltage
-  if (op(current).voltage >= batteryVoltage) {
-    current = currentAtClampedVoltage(generator, rectifier, true, rpm, batteryVoltage);
-    mode = current > board.bypassMaxCurrent ? "overload" : "bypass";
-  }
+  if (op(current).voltage >= batteryVoltage) return bypassControlPoint(sys, rpm);
 
   const point = op(current);
-  const boosting = mode === "boost" || mode === "boost-limited";
-  const outputPower = boosting
-    ? point.power * boostEfficiency
-    : Math.min(point.power, batteryVoltage * board.bypassMaxCurrent);
   return {
     rpm,
     frequency,
@@ -116,32 +109,47 @@ export function controlPoint(sys: WindSystem, rpm: number): ControlPoint {
     voltage: point.voltage,
     shaftPower: point.shaftPower,
     dcPower: point.power,
-    outputPower,
-    excessPower: boosting ? 0 : point.power - outputPower,
+    outputPower: point.power * boostEfficiency,
+    excessPower: 0,
   };
 }
 
 /**
- * Behavior without the boost stage: the active rectifier is always connected directly to the
- * battery (like the bypass), with the same current rating. Used to quantify the benefit of the
- * boost stage.
+ * Behavior in bypass mode: the bypass diode connects the rectifier directly to the battery, so
+ * the rectified voltage is clamped to the battery voltage plus the diode forward voltage.
  */
-export function noBoostControlPoint(sys: WindSystem, rpm: number): ControlPoint {
+function bypassControlPoint(sys: WindSystem, rpm: number): ControlPoint {
   const { generator, rectifier, batteryVoltage } = sys;
-  const current = currentAtClampedVoltage(generator, rectifier, true, rpm, batteryVoltage);
+  const diodeVoltage = board.bypassDiodeForwardVoltage;
+  const current = currentAtClampedVoltage(
+    generator,
+    rectifier,
+    true,
+    rpm,
+    batteryVoltage + diodeVoltage,
+  );
   const point = dcOperatingPoint(generator, rectifier, true, rpm, current);
-  const outputPower = Math.min(point.power, batteryVoltage * board.bypassMaxCurrent);
+  const delivered = point.power - diodeVoltage * current;
+  const outputPower = Math.min(delivered, batteryVoltage * board.bypassMaxCurrent);
   return {
     rpm,
     frequency: electricalFrequency(generator.poles, rpm),
     mode: current > board.bypassMaxCurrent ? "overload" : "bypass",
     current,
-    voltage: current > 0 ? batteryVoltage : point.voltage,
+    voltage: current > 0 ? batteryVoltage + diodeVoltage : point.voltage,
     shaftPower: point.shaftPower,
     dcPower: point.power,
     outputPower,
-    excessPower: point.power - outputPower,
+    excessPower: delivered - outputPower,
   };
+}
+
+/**
+ * Behavior without the boost stage: the rectifier is always connected to the battery via the
+ * bypass diode, with the same current rating. Used to quantify the benefit of the boost stage.
+ */
+export function noBoostControlPoint(sys: WindSystem, rpm: number): ControlPoint {
+  return bypassControlPoint(sys, rpm);
 }
 
 export interface SteadyState {
@@ -211,7 +219,7 @@ export interface CurvePoint {
 
 /**
  * Lookup curve for the firmware: boost input current as a function of the electrical
- * frequency, from standstill up to the speed where the board switches to bypass.
+ * frequency, from standstill up to the speed where the bypass diode takes over.
  */
 export function lookupCurve(sys: WindSystem, points: number): CurvePoint[] {
   // Find the speed where the boost stage stops operating

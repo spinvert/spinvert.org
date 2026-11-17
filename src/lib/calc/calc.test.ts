@@ -136,7 +136,17 @@ describe("operating point", () => {
   test("bypass above battery voltage", () => {
     const op = controlPoint(system, 1500);
     expect(op.mode === "bypass" || op.mode === "overload").toBe(true);
-    expect(op.voltage).toBeCloseTo(system.batteryVoltage, 6);
+    // Rectified voltage clamped to battery voltage plus diode forward voltage
+    const diode = board.bypassDiodeForwardVoltage;
+    expect(op.voltage).toBeCloseTo(system.batteryVoltage + diode, 6);
+  });
+
+  test("bypass diode losses are subtracted from the output", () => {
+    const op = controlPoint(system, 600);
+    expect(op.mode).toBe("bypass");
+    const diodeLoss = board.bypassDiodeForwardVoltage * op.current;
+    expect(op.outputPower).toBeCloseTo(op.dcPower - diodeLoss, 6);
+    expect(op.outputPower).toBeCloseTo(op.current * system.batteryVoltage, 6);
   });
 
   test("lookup curve ends where boost operation ends", () => {
