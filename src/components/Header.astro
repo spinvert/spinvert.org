@@ -1,8 +1,9 @@
 ---
-import { ChevronDown, Zap } from "@lucide/svelte";
+import { ChevronDown } from "@lucide/svelte";
 import { Button, buttonVariants } from "$lib/components/ui/button";
 import { navLinks, site } from "$lib/site";
 import GitHubIcon from "./GitHubIcon.astro";
+import Logo from "./Logo.astro";
 import ThemeToggle from "./ThemeToggle.astro";
 
 const summaryClass = "list-none [&::-webkit-details-marker]:hidden";
@@ -14,8 +15,8 @@ const mobileItemClass = "block rounded-md px-3 py-2 hover:bg-muted";
 
 <header class="sticky top-0 z-50 border-b bg-background/80 backdrop-blur">
   <nav class="relative z-10 mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
-    <a href="/" class="flex items-center gap-2 font-semibold tracking-tight">
-      <Zap class="size-5 fill-primary text-primary" aria-hidden="true" />
+    <a href="/" class="flex items-center gap-2 text-xl font-semibold tracking-normal">
+      <Logo class="size-7 text-primary" />
       {site.name}
     </a>
     <div class="flex items-center gap-1">
